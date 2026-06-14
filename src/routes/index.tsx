@@ -137,13 +137,10 @@ function Home() {
           </Field>
 
           <Field label={`${t("yourAge")}: ${age}`}>
-            <input
-              type="range"
-              min={13}
-              max={80}
+            <ChipGroup
               value={age}
-              onChange={(e) => setAge(Number(e.target.value))}
-              className="w-full accent-[var(--brand)]"
+              onChange={setAge}
+              options={[16, 18, 21, 25, 30, 35, 40, 50]}
             />
           </Field>
 
@@ -152,38 +149,29 @@ function Home() {
           <Field label={t("lookingFor")}>
             <Segmented
               value={wantGender}
-              onChange={(v) => setWantGender(v as Gender | "any")}
+              onChange={(v) => setWantGender(v as Gender)}
               options={[
                 { value: "male", label: t("male") },
                 { value: "female", label: t("female") },
-                { value: "any", label: t("any") },
               ]}
             />
           </Field>
 
           <Field label={`${t("ageRange")}: ${ageRange[0]}–${ageRange[1]}`}>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={13}
-                max={80}
-                value={ageRange[0]}
-                onChange={(e) =>
-                  setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])
-                }
-                className="w-full accent-[var(--brand)]"
-              />
-              <input
-                type="range"
-                min={13}
-                max={80}
-                value={ageRange[1]}
-                onChange={(e) =>
-                  setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])
-                }
-                className="w-full accent-[var(--brand)]"
-              />
-            </div>
+            <ChipGroup
+              value={`${ageRange[0]}-${ageRange[1]}`}
+              onChange={(v) => {
+                const [a, b] = String(v).split("-").map(Number);
+                setAgeRange([a, b]);
+              }}
+              options={[
+                { value: "13-17", label: "13–17" },
+                { value: "18-24", label: "18–24" },
+                { value: "25-34", label: "25–34" },
+                { value: "35-49", label: "35–49" },
+                { value: "50-80", label: "50+" },
+              ]}
+            />
           </Field>
 
           <button onClick={handleFind} className="btn-pill btn-brand mt-5 w-full text-base">
