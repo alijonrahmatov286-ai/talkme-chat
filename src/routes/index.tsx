@@ -225,6 +225,40 @@ function Segmented({
   );
 }
 
+function ChipGroup<T extends string | number>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: Array<T | { value: T; label: string }>;
+}) {
+  const norm = options.map((o) =>
+    typeof o === "object" ? o : { value: o, label: String(o) },
+  );
+  return (
+    <div className="flex flex-wrap gap-2">
+      {norm.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={String(o.value)}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={
+              "btn-pill !px-4 !py-2 text-sm " +
+              (active ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function SearchingPanel({ onCancel }: { onCancel: () => void }) {
   const { t } = useApp();
   return (
