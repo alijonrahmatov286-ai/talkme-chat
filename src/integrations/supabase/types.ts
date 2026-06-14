@@ -14,13 +14,125 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_rooms: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          room_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          room_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          room_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      presence: {
+        Row: {
+          last_seen: string
+          user_id: string
+        }
+        Insert: {
+          last_seen?: string
+          user_id: string
+        }
+        Update: {
+          last_seen?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      waiting_queue: {
+        Row: {
+          age: number
+          created_at: string
+          gender: string
+          user_id: string
+          want_age_max: number
+          want_age_min: number
+          want_gender: string
+        }
+        Insert: {
+          age: number
+          created_at?: string
+          gender: string
+          user_id: string
+          want_age_max?: number
+          want_age_min?: number
+          want_gender: string
+        }
+        Update: {
+          age?: number
+          created_at?: string
+          gender?: string
+          user_id?: string
+          want_age_max?: number
+          want_age_min?: number
+          want_gender?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      find_or_queue_match: {
+        Args: {
+          p_age: number
+          p_gender: string
+          p_user_id: string
+          p_want_age_max: number
+          p_want_age_min: number
+          p_want_gender: string
+        }
+        Returns: string
+      }
+      find_room_for_user: { Args: { p_user_id: string }; Returns: string }
+      online_count: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
