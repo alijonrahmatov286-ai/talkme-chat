@@ -1,29 +1,257 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
+import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
+import { useOnlineCount } from "@/lib/use-online";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "TalkMe — Anonymous chat" },
+      { name: "description", content: "Pick your gender, age and start chatting anonymously." },
     ],
   }),
-  component: Index,
+  component: Home,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Home() {
+  const { t, profile, setProfile, userId, brand } = useApp();
+  const online = useOnlineCount(userId);
+  const navigate = useNavigate();
+  const [searching, setSearching] = useState(false);
+
+  const [gender, setGender] = useState<Gender>(profile?.gender ?? "male");
+  const [age, setAge] = useState<number>(profile?.age ?? 21);
+  const [wantGender, setWantGender] = useState<Gender | "any">(profile?.wantGender ?? "any");
+  const [ageRange, setAgeRange] = useState<[number, number]>([
+    profile?.wantAgeMin ?? 18,
+    profile?.wantAgeMax ?? 35,
+  ]);
+
+  const draft: UserProfile = useMemo(
+    () => ({
+      userId,
+      gender,
+      age,
+      wantGender,
+      wantAgeMin: ageRange[0],
+      wantAgeMax: ageRange[1],
+    }),
+    [userId, gender, age, wantGender, ageRange],
+  );
+
+  // Poll for partner while searching
+  useEffect(() => {
+    if (!searching) return;
+    let cancelled = false;
+    const check = async () => {
+      const { data } = await supabase.rpc("find_room_for_user", { p_user_id: userId });
+      if (!cancelled && typeof data === "string" && data) {
+        setSearching(false);
+        navigate({ to: "/chat/$roomId", params: { roomId: data } });
+      }
+    };
+    check();
+    const id = setInterval(check, 1500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [searching, userId, navigate]);
+
+  const handleFind = async () => {
+    if (!userId) return;
+    setProfile(draft);
+    setSearching(true);
+    const { data, error } = await supabase.rpc("find_or_queue_match", {
+      p_user_id: userId,
+      p_gender: gender,
+      p_age: age,
+      p_want_gender: wantGender,
+      p_want_age_min: ageRange[0],
+      p_want_age_max: ageRange[1],
+    });
+    if (error) {
+      console.error(error);
+      setSearching(false);
+      return;
+    }
+    if (typeof data === "string" && data) {
+      setSearching(false);
+      navigate({ to: "/chat/$roomId", params: { roomId: data } });
+    }
+  };
+
+  const handleCancel = async () => {
+    setSearching(false);
+    await supabase.from("waiting_queue").delete().eq("user_id", userId);
+  };
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
+      <header className="mb-6 flex items-center justify-between animate-fade-up">
+        <div className="flex items-center gap-2">
+          <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_10px_30px_-10px_var(--brand-glow)]">
+            <MessageCircle className="h-5 w-5" />
+          </div>
+          <span className="text-xl font-bold tracking-tight">TalkMe</span>
+        </div>
+        <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
+          <SettingsIcon className="h-5 w-5" />
+        </Link>
+      </header>
+
+      <section className="card-soft mb-6 flex items-center justify-between gap-3 px-5 py-4 animate-fade-up">
+        <div className="flex items-center gap-3">
+          <span className="pulse-dot" />
+          <div>
+            <div className="text-2xl font-bold tabular-nums">{online}</div>
+            <div className="text-xs text-muted-foreground">{t("online")}</div>
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground capitalize">{brand}</div>
+      </section>
+
+      {searching ? (
+        <SearchingPanel onCancel={handleCancel} />
+      ) : (
+        <div className="card-soft p-5 animate-fade-up">
+          <h2 className="mb-1 text-lg font-semibold">{t("tagline")}</h2>
+          <p className="mb-5 text-sm text-muted-foreground">
+            <Sparkles className="mr-1 inline h-4 w-4" />
+            {t("findPartner")}
+          </p>
+
+          <Field label={t("yourGender")}>
+            <Segmented
+              value={gender}
+              onChange={(v) => setGender(v as Gender)}
+              options={[
+                { value: "male", label: t("male") },
+                { value: "female", label: t("female") },
+              ]}
+            />
+          </Field>
+
+          <Field label={`${t("yourAge")}: ${age}`}>
+            <input
+              type="range"
+              min={13}
+              max={80}
+              value={age}
+              onChange={(e) => setAge(Number(e.target.value))}
+              className="w-full accent-[var(--brand)]"
+            />
+          </Field>
+
+          <div className="my-4 h-px bg-border" />
+
+          <Field label={t("lookingFor")}>
+            <Segmented
+              value={wantGender}
+              onChange={(v) => setWantGender(v as Gender | "any")}
+              options={[
+                { value: "male", label: t("male") },
+                { value: "female", label: t("female") },
+                { value: "any", label: t("any") },
+              ]}
+            />
+          </Field>
+
+          <Field label={`${t("ageRange")}: ${ageRange[0]}–${ageRange[1]}`}>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min={13}
+                max={80}
+                value={ageRange[0]}
+                onChange={(e) =>
+                  setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])
+                }
+                className="w-full accent-[var(--brand)]"
+              />
+              <input
+                type="range"
+                min={13}
+                max={80}
+                value={ageRange[1]}
+                onChange={(e) =>
+                  setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])
+                }
+                className="w-full accent-[var(--brand)]"
+              />
+            </div>
+          </Field>
+
+          <button onClick={handleFind} className="btn-pill btn-brand mt-5 w-full text-base">
+            <MessageCircle className="h-5 w-5" />
+            {t("findPartner")}
+          </button>
+        </div>
+      )}
+    </main>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="mb-4 block">
+      <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
+function Segmented({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+}) {
+  return (
+    <div className="flex gap-2">
+      {options.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={o.value}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={
+              "btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function SearchingPanel({ onCancel }: { onCancel: () => void }) {
+  const { t } = useApp();
+  return (
+    <div className="card-soft flex flex-col items-center gap-5 p-8 animate-fade-up">
+      <div className="relative grid h-24 w-24 place-items-center">
+        <div className="absolute inset-0 animate-float rounded-full bg-[var(--brand)]/20 blur-2xl" />
+        <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_20px_50px_-10px_var(--brand-glow)]">
+          <MessageCircle className="h-9 w-9" />
+        </div>
+      </div>
+      <div className="h-1 w-40 overflow-hidden rounded-full bg-secondary">
+        <div className="h-full w-full animate-shimmer" />
+      </div>
+      <p className="text-sm text-muted-foreground">{t("searching")}</p>
+      <button onClick={onCancel} className="btn-pill btn-ghost-pill w-full">
+        {t("cancel")}
+      </button>
     </div>
   );
 }
