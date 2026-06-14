@@ -23,10 +23,12 @@ function Home() {
 
   const [gender, setGender] = useState<Gender>(profile?.gender ?? "male");
   const [age, setAge] = useState<number>(profile?.age ?? 21);
-  const [wantGender, setWantGender] = useState<Gender | "any">(profile?.wantGender ?? "any");
+  const [wantGender, setWantGender] = useState<Gender>(
+    (profile?.wantGender as Gender) ?? "female",
+  );
   const [ageRange, setAgeRange] = useState<[number, number]>([
     profile?.wantAgeMin ?? 18,
-    profile?.wantAgeMax ?? 35,
+    profile?.wantAgeMax ?? 24,
   ]);
 
   const draft: UserProfile = useMemo(
