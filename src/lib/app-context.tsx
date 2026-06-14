@@ -44,13 +44,13 @@ function readLS<T>(key: string, fallback: T): T {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [lang, setLangState] = useState<Lang>("ru");
-  const [brand, setBrandState] = useState<Brand>("pink");
+  const [brand, setBrandState] = useState<Brand>("white");
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
-    setBrandState(readLS<Brand>("talkme_brand", "pink"));
+    setBrandState(readLS<Brand>("talkme_brand", "white"));
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
     let uid = readLS<string>("talkme_uid", "");
     if (!uid) {

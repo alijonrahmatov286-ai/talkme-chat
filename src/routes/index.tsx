@@ -23,10 +23,12 @@ function Home() {
 
   const [gender, setGender] = useState<Gender>(profile?.gender ?? "male");
   const [age, setAge] = useState<number>(profile?.age ?? 21);
-  const [wantGender, setWantGender] = useState<Gender | "any">(profile?.wantGender ?? "any");
+  const [wantGender, setWantGender] = useState<Gender>(
+    (profile?.wantGender as Gender) ?? "female",
+  );
   const [ageRange, setAgeRange] = useState<[number, number]>([
     profile?.wantAgeMin ?? 18,
-    profile?.wantAgeMax ?? 35,
+    profile?.wantAgeMax ?? 24,
   ]);
 
   const draft: UserProfile = useMemo(
@@ -135,13 +137,10 @@ function Home() {
           </Field>
 
           <Field label={`${t("yourAge")}: ${age}`}>
-            <input
-              type="range"
-              min={13}
-              max={80}
+            <ChipGroup
               value={age}
-              onChange={(e) => setAge(Number(e.target.value))}
-              className="w-full accent-[var(--brand)]"
+              onChange={setAge}
+              options={[16, 18, 21, 25, 30, 35, 40, 50]}
             />
           </Field>
 
@@ -150,38 +149,29 @@ function Home() {
           <Field label={t("lookingFor")}>
             <Segmented
               value={wantGender}
-              onChange={(v) => setWantGender(v as Gender | "any")}
+              onChange={(v) => setWantGender(v as Gender)}
               options={[
                 { value: "male", label: t("male") },
                 { value: "female", label: t("female") },
-                { value: "any", label: t("any") },
               ]}
             />
           </Field>
 
           <Field label={`${t("ageRange")}: ${ageRange[0]}–${ageRange[1]}`}>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min={13}
-                max={80}
-                value={ageRange[0]}
-                onChange={(e) =>
-                  setAgeRange([Math.min(Number(e.target.value), ageRange[1]), ageRange[1]])
-                }
-                className="w-full accent-[var(--brand)]"
-              />
-              <input
-                type="range"
-                min={13}
-                max={80}
-                value={ageRange[1]}
-                onChange={(e) =>
-                  setAgeRange([ageRange[0], Math.max(Number(e.target.value), ageRange[0])])
-                }
-                className="w-full accent-[var(--brand)]"
-              />
-            </div>
+            <ChipGroup
+              value={`${ageRange[0]}-${ageRange[1]}`}
+              onChange={(v) => {
+                const [a, b] = String(v).split("-").map(Number);
+                setAgeRange([a, b]);
+              }}
+              options={[
+                { value: "13-17", label: "13–17" },
+                { value: "18-24", label: "18–24" },
+                { value: "25-34", label: "25–34" },
+                { value: "35-49", label: "35–49" },
+                { value: "50-80", label: "50+" },
+              ]}
+            />
           </Field>
 
           <button onClick={handleFind} className="btn-pill btn-brand mt-5 w-full text-base">
@@ -225,6 +215,40 @@ function Segmented({
             onClick={() => onChange(o.value)}
             className={
               "btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
+            {o.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ChipGroup<T extends string | number>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: Array<T | { value: T; label: string }>;
+}) {
+  const norm = options.map((o) =>
+    typeof o === "object" ? o : { value: o, label: String(o) },
+  );
+  return (
+    <div className="flex flex-wrap gap-2">
+      {norm.map((o) => {
+        const active = o.value === value;
+        return (
+          <button
+            key={String(o.value)}
+            type="button"
+            onClick={() => onChange(o.value)}
+            className={
+              "btn-pill !px-4 !py-2 text-sm " +
+              (active ? "btn-brand" : "btn-ghost-pill")
             }
           >
             {o.label}
