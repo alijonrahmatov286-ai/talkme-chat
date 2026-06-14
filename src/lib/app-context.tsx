@@ -50,7 +50,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
-    setBrandState(readLS<Brand>("talkme_brand", "pink"));
+    setBrandState(readLS<Brand>("talkme_brand", "white"));
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
     let uid = readLS<string>("talkme_uid", "");
     if (!uid) {
