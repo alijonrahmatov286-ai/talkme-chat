@@ -44,7 +44,7 @@ function readLS<T>(key: string, fallback: T): T {
 export function AppProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
   const [lang, setLangState] = useState<Lang>("ru");
-  const [brand, setBrandState] = useState<Brand>("pink");
+  const [brand, setBrandState] = useState<Brand>("white");
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [userId, setUserId] = useState<string>("");
 
