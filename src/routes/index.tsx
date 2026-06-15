@@ -183,6 +183,7 @@ function Home() {
           </button>
         </div>
       )}
+      <BottomNav />
     </main>
   );
 }
