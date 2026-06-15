@@ -161,7 +161,7 @@ function Home() {
             />
           </Field>
 
-          <Field label={`${t("ageRange")}: ${ageRange[0]}–${ageRange[1]}`}>
+          <Field label={`${t("ageRange")}: ${ageRange[0] === 30 ? "30+" : `${ageRange[0]}–${ageRange[1]}`}`}>
             <ChipGroup
               value={`${ageRange[0]}-${ageRange[1]}`}
               onChange={(v) => {
@@ -169,11 +169,9 @@ function Home() {
                 setAgeRange([a, b]);
               }}
               options={[
-                { value: "13-17", label: "13–17" },
-                { value: "18-24", label: "18–24" },
-                { value: "25-34", label: "25–34" },
-                { value: "35-49", label: "35–49" },
-                { value: "50-80", label: "50+" },
+                { value: "18-20", label: "18–20" },
+                { value: "21-25", label: "21–25" },
+                { value: "30-99", label: "30+" },
               ]}
             />
           </Field>
