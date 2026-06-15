@@ -33,6 +33,12 @@ export const translations = {
     you: "You",
     stranger: "Stranger",
     home: "Home",
+    chatTab: "Chat",
+    voiceTab: "Voice",
+    voiceTitle: "Voice call",
+    voiceHint: "Talk live with a stranger.",
+    startCall: "Start call",
+    voiceSearching: "Connecting a call…",
   },
   ru: {
     appName: "TalkMe",
@@ -66,6 +72,12 @@ export const translations = {
     you: "Вы",
     stranger: "Незнакомец",
     home: "Главная",
+    chatTab: "Чат",
+    voiceTab: "Звонок",
+    voiceTitle: "Голосовой вызов",
+    voiceHint: "Поговорите вживую с незнакомцем.",
+    startCall: "Начать звонок",
+    voiceSearching: "Соединяем звонок…",
   },
 } as const;
 
