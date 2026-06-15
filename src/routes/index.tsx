@@ -136,11 +136,15 @@ function Home() {
             />
           </Field>
 
-          <Field label={`${t("yourAge")}: ${age}`}>
+          <Field label={`${t("yourAge")}: ${age === 30 ? "30+" : age === 18 ? "18–20" : "21–25"}`}>
             <ChipGroup
               value={age}
               onChange={setAge}
-              options={[16, 18, 21, 25, 30, 35, 40, 50]}
+              options={[
+                { value: 18, label: "18–20" },
+                { value: 21, label: "21–25" },
+                { value: 30, label: "30+" },
+              ]}
             />
           </Field>
 
