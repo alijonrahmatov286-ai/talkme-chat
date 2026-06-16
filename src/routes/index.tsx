@@ -5,6 +5,7 @@ import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
+import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,6 +53,7 @@ function Home() {
       const { data } = await supabase.rpc("find_room_for_user", { p_user_id: userId });
       if (!cancelled && typeof data === "string" && data) {
         setSearching(false);
+        feedback("match");
         navigate({ to: "/chat/$roomId", params: { roomId: data } });
       }
     };
@@ -82,6 +84,7 @@ function Home() {
     }
     if (typeof data === "string" && data) {
       setSearching(false);
+      feedback("match");
       navigate({ to: "/chat/$roomId", params: { roomId: data } });
     }
   };
