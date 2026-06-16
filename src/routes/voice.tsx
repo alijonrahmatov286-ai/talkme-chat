@@ -143,7 +143,10 @@ function VoicePage() {
           </Field>
 
           <button
-            onClick={() => setCalling(true)}
+            onClick={() => {
+              feedback("call");
+              setCalling(true);
+            }}
             className="btn-pill btn-brand mt-5 w-full text-base"
           >
             <Phone className="h-5 w-5" />
