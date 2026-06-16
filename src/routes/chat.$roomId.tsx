@@ -79,7 +79,10 @@ function ChatPage() {
         (payload) => {
           const r = payload.new as Room;
           setRoom(r);
-          if (!r.active) setPartnerLeft(true);
+          if (!r.active) {
+            setPartnerLeft(true);
+            feedback("leave");
+          }
         },
       )
       .subscribe();
