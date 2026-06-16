@@ -84,6 +84,12 @@ export const translations = {
     voiceHint: "Поговорите вживую с незнакомцем.",
     startCall: "Начать звонок",
     voiceSearching: "Соединяем звонок…",
+    sound: "Звук",
+    vibration: "Вибрация",
+    soundHint: "Звук при сообщениях и совпадении.",
+    vibrationHint: "Вибрация при сообщениях и совпадении.",
+    on: "Вкл",
+    off: "Выкл",
   },
 } as const;
 
