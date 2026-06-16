@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate } from "lucide-react";
 import { useApp, type Brand } from "@/lib/app-context";
+import { Switch } from "@/components/ui/switch";
+import { feedback } from "@/lib/feedback";
 import type { Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/settings")({
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { t, lang, setLang, brand, setBrand } = useApp();
+  const { t, lang, setLang, brand, setBrand, sound, setSound, vibration, setVibration } = useApp();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
