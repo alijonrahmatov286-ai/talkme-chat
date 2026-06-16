@@ -39,6 +39,12 @@ export const translations = {
     voiceHint: "Talk live with a stranger.",
     startCall: "Start call",
     voiceSearching: "Connecting a call…",
+    sound: "Sound",
+    vibration: "Vibration",
+    soundHint: "Play sound on new message and match.",
+    vibrationHint: "Vibrate device on new message and match.",
+    on: "On",
+    off: "Off",
   },
   ru: {
     appName: "TalkMe",
