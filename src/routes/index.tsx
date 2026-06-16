@@ -53,6 +53,7 @@ function Home() {
       const { data } = await supabase.rpc("find_room_for_user", { p_user_id: userId });
       if (!cancelled && typeof data === "string" && data) {
         setSearching(false);
+        feedback("match");
         navigate({ to: "/chat/$roomId", params: { roomId: data } });
       }
     };
