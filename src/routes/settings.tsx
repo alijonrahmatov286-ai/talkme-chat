@@ -80,6 +80,62 @@ function SettingsPage() {
           })}
         </div>
       </section>
+
+      <section className="card-soft mt-4 p-5 animate-fade-up">
+        <ToggleRow
+          icon={sound ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
+          title={t("sound")}
+          hint={t("soundHint")}
+          checked={sound}
+          onChange={(v) => {
+            setSound(v);
+            if (v) {
+              // play preview after pref is saved
+              setTimeout(() => feedback("message"), 0);
+            }
+          }}
+        />
+        <div className="my-3 h-px bg-border" />
+        <ToggleRow
+          icon={<Vibrate className="h-5 w-5" />}
+          title={t("vibration")}
+          hint={t("vibrationHint")}
+          checked={vibration}
+          onChange={(v) => {
+            setVibration(v);
+            if (v) setTimeout(() => feedback("message"), 0);
+          }}
+        />
+      </section>
     </main>
+  );
+}
+
+function ToggleRow({
+  icon,
+  title,
+  hint,
+  checked,
+  onChange,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  hint: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-foreground">
+          {icon}
+        </span>
+        <div>
+          <div className="text-sm font-medium">{title}</div>
+          <div className="text-xs text-muted-foreground">{hint}</div>
+        </div>
+      </div>
+      <Switch checked={checked} onCheckedChange={onChange} />
+    </div>
   );
 }
