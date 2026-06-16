@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Volume2, Vibrate } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useApp, type Brand } from "@/lib/app-context";
+import { feedback } from "@/lib/feedback";
 import type { Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/settings")({
