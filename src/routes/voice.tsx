@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff } from "lucide-reac
 import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
+import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/voice")({
   head: () => ({
