@@ -50,12 +50,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>("ru");
   const [brand, setBrandState] = useState<Brand>("white");
   const [profile, setProfileState] = useState<UserProfile | null>(null);
+  const [sound, setSoundState] = useState<boolean>(true);
+  const [vibration, setVibrationState] = useState<boolean>(true);
   const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
     setBrandState(readLS<Brand>("talkme_brand", "white"));
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
+    setSoundState(readLS<boolean>("talkme_sound", true));
+    setVibrationState(readLS<boolean>("talkme_vibration", true));
     let uid = readLS<string>("talkme_uid", "");
     if (!uid) {
       uid = uuid();
@@ -84,6 +88,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (p) localStorage.setItem("talkme_profile", JSON.stringify(p));
     else localStorage.removeItem("talkme_profile");
   };
+  const setSound = (v: boolean) => {
+    setSoundState(v);
+    localStorage.setItem("talkme_sound", JSON.stringify(v));
+  };
+  const setVibration = (v: boolean) => {
+    setVibrationState(v);
+    localStorage.setItem("talkme_vibration", JSON.stringify(v));
+  };
 
   const value = useMemo<AppState>(
     () => ({
@@ -93,10 +105,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setBrand,
       profile,
       setProfile,
+      sound,
+      setSound,
+      vibration,
+      setVibration,
       userId,
       t: (k) => translations[lang][k],
     }),
-    [lang, brand, profile, userId],
+    [lang, brand, profile, sound, vibration, userId],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
