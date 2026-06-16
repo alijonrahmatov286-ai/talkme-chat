@@ -1,6 +1,8 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Volume2, Vibrate } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 import { useApp, type Brand } from "@/lib/app-context";
+import { feedback } from "@/lib/feedback";
 import type { Lang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/settings")({
@@ -11,7 +13,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { t, lang, setLang, brand, setBrand } = useApp();
+  const { t, lang, setLang, brand, setBrand, sound, setSound, vibration, setVibration } = useApp();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
@@ -76,6 +78,43 @@ function SettingsPage() {
               </button>
             );
           })}
+        </div>
+      </section>
+
+      <section className="card-soft mt-4 p-5 animate-fade-up">
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t("feedback")}
+        </h2>
+        <div className="space-y-2">
+          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+            <span className="flex items-center gap-3">
+              <Volume2 className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-sm">{t("sound")}</span>
+            </span>
+            <Switch
+              checked={sound}
+              onCheckedChange={(v) => {
+                setSound(v);
+                if (v) {
+                  // preview tone — write pref first so playSound reads true
+                  setTimeout(() => feedback("message"), 0);
+                }
+              }}
+            />
+          </label>
+          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+            <span className="flex items-center gap-3">
+              <Vibrate className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-sm">{t("vibration")}</span>
+            </span>
+            <Switch
+              checked={vibration}
+              onCheckedChange={(v) => {
+                setVibration(v);
+                if (v) setTimeout(() => feedback("message"), 0);
+              }}
+            />
+          </label>
         </div>
       </section>
     </main>

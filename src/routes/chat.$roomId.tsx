@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Send, LogOut } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
+import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
@@ -67,7 +68,9 @@ function ChatPage() {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` },
         (payload) => {
-          setMessages((prev) => [...prev, payload.new as Message]);
+          const msg = payload.new as Message;
+          setMessages((prev) => [...prev, msg]);
+          if (msg.sender_id !== userId) feedback("message");
         },
       )
       .on(
@@ -76,7 +79,10 @@ function ChatPage() {
         (payload) => {
           const r = payload.new as Room;
           setRoom(r);
-          if (!r.active) setPartnerLeft(true);
+          if (!r.active) {
+            setPartnerLeft(true);
+            feedback("leave");
+          }
         },
       )
       .subscribe();
