@@ -98,11 +98,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+const brandBootScript = `(function(){try{var b=JSON.parse(localStorage.getItem('talkme_brand'));if(b==='white'||b==='pink'||b==='blue'){document.documentElement.setAttribute('data-brand',b);}else{document.documentElement.setAttribute('data-brand','white');}var l=JSON.parse(localStorage.getItem('talkme_lang'));if(l==='ru'||l==='en'){document.documentElement.lang=l;}}catch(e){document.documentElement.setAttribute('data-brand','white');}})();`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ru" data-brand="white">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: brandBootScript }} />
       </head>
       <body>
         {children}
