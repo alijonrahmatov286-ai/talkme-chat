@@ -84,6 +84,7 @@ function Home() {
     }
     if (typeof data === "string" && data) {
       setSearching(false);
+      feedback("match");
       navigate({ to: "/chat/$roomId", params: { roomId: data } });
     }
   };
