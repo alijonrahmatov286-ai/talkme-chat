@@ -80,6 +80,43 @@ function SettingsPage() {
           })}
         </div>
       </section>
+
+      <section className="card-soft mt-4 p-5 animate-fade-up">
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t("feedback")}
+        </h2>
+        <div className="space-y-2">
+          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+            <span className="flex items-center gap-3">
+              <Volume2 className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-sm">{t("sound")}</span>
+            </span>
+            <Switch
+              checked={sound}
+              onCheckedChange={(v) => {
+                setSound(v);
+                if (v) {
+                  // preview tone — write pref first so playSound reads true
+                  setTimeout(() => feedback("message"), 0);
+                }
+              }}
+            />
+          </label>
+          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+            <span className="flex items-center gap-3">
+              <Vibrate className="h-5 w-5 text-muted-foreground" />
+              <span className="font-medium text-sm">{t("vibration")}</span>
+            </span>
+            <Switch
+              checked={vibration}
+              onCheckedChange={(v) => {
+                setVibration(v);
+                if (v) setTimeout(() => feedback("message"), 0);
+              }}
+            />
+          </label>
+        </div>
+      </section>
     </main>
   );
 }
