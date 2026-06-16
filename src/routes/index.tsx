@@ -29,7 +29,7 @@ function Home() {
   );
   const [ageRange, setAgeRange] = useState<[number, number]>([
     profile?.wantAgeMin ?? 18,
-    profile?.wantAgeMax ?? 24,
+    profile?.wantAgeMax ?? 20,
   ]);
 
   const draft: UserProfile = useMemo(
