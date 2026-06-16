@@ -13,7 +13,7 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { t, lang, setLang, brand, setBrand } = useApp();
+  const { t, lang, setLang, brand, setBrand, sound, setSound, vibration, setVibration } = useApp();
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
