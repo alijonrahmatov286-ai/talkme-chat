@@ -20,6 +20,10 @@ interface AppState {
   setBrand: (b: Brand) => void;
   profile: UserProfile | null;
   setProfile: (p: UserProfile | null) => void;
+  sound: boolean;
+  setSound: (v: boolean) => void;
+  vibration: boolean;
+  setVibration: (v: boolean) => void;
   t: (k: TKey) => string;
   userId: string;
 }
