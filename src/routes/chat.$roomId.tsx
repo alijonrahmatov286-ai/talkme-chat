@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Send, LogOut } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
+import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
