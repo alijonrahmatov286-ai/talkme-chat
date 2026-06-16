@@ -5,6 +5,7 @@ import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
+import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/")({
   head: () => ({
