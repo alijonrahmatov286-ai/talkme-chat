@@ -298,3 +298,14 @@ function ChatPage() {
     </main>
   );
 }
+
+function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+      <div className="absolute inset-0 bg-black/50 animate-fade-up" onClick={onClose} />
+      <div className="card-soft relative z-10 m-3 w-full max-w-md p-5 animate-fade-up">
+        {children}
+      </div>
+    </div>
+  );
+}
