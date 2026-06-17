@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, Vibrate } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff } from "lucide-react";
 import { useApp, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
 import type { Lang } from "@/lib/i18n";
@@ -86,35 +85,42 @@ function SettingsPage() {
           {t("feedback")}
         </h2>
         <div className="space-y-2">
-          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+          <button
+            type="button"
+            onClick={() => {
+              const next = !sound;
+              setSound(next);
+              if (next) setTimeout(() => feedback("message"), 0);
+            }}
+            className={
+              "btn-pill w-full justify-between !rounded-2xl !px-4 !py-3 " +
+              (sound ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
             <span className="flex items-center gap-3">
-              <Volume2 className="h-5 w-5 text-muted-foreground" />
+              {sound ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
               <span className="font-medium text-sm">{t("sound")}</span>
             </span>
-            <Switch
-              checked={sound}
-              onCheckedChange={(v) => {
-                setSound(v);
-                if (v) {
-                  // preview tone — write pref first so playSound reads true
-                  setTimeout(() => feedback("message"), 0);
-                }
-              }}
-            />
-          </label>
-          <label className="flex items-center justify-between rounded-2xl border border-border px-4 py-3 cursor-pointer">
+            {sound && <Check className="h-5 w-5" />}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              const next = !vibration;
+              setVibration(next);
+              if (next) setTimeout(() => feedback("message"), 0);
+            }}
+            className={
+              "btn-pill w-full justify-between !rounded-2xl !px-4 !py-3 " +
+              (vibration ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
             <span className="flex items-center gap-3">
-              <Vibrate className="h-5 w-5 text-muted-foreground" />
+              {vibration ? <Vibrate className="h-5 w-5" /> : <VibrateOff className="h-5 w-5" />}
               <span className="font-medium text-sm">{t("vibration")}</span>
             </span>
-            <Switch
-              checked={vibration}
-              onCheckedChange={(v) => {
-                setVibration(v);
-                if (v) setTimeout(() => feedback("message"), 0);
-              }}
-            />
-          </label>
+            {vibration && <Check className="h-5 w-5" />}
+          </button>
         </div>
       </section>
     </main>

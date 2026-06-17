@@ -12,6 +12,24 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "../lib/app-context";
+import { feedback } from "../lib/feedback";
+
+function useGlobalClickFeedback() {
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const el = target.closest(
+        'button, a, [role="button"], [role="switch"], [role="tab"], label[for], input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"]',
+      ) as HTMLElement | null;
+      if (!el) return;
+      if (el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") return;
+      feedback("message");
+    };
+    document.addEventListener("click", handler, true);
+    return () => document.removeEventListener("click", handler, true);
+  }, []);
+}
 
 function NotFoundComponent() {
   return (
@@ -117,6 +135,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useGlobalClickFeedback();
 
   return (
     <QueryClientProvider client={queryClient}>
