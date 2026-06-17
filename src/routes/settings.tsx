@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, Vibrate } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff } from "lucide-react";
 import { useApp, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
 import type { Lang } from "@/lib/i18n";
