@@ -34,7 +34,11 @@ function ChatPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [blockOpen, setBlockOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const partnerId = room ? (room.user_a === userId ? room.user_b : room.user_a) : null;
 
   // load room + history
   useEffect(() => {
