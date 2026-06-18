@@ -98,7 +98,15 @@
   padding: 0.875rem 1.5rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  transition: transform 220ms cubic-bezier(.2,.7,.2,1), box-shadow 220ms ease, background 220ms ease, color 220ms ease, opacity 220ms ease;
+  transition:
+    transform 480ms cubic-bezier(.22,1,.36,1),
+    box-shadow 480ms cubic-bezier(.22,1,.36,1),
+    background 480ms cubic-bezier(.22,1,.36,1),
+    background-color 480ms cubic-bezier(.22,1,.36,1),
+    border-color 480ms cubic-bezier(.22,1,.36,1),
+    color 380ms ease,
+    opacity 380ms ease,
+    backdrop-filter 480ms ease;
   will-change: transform;
   &:hover { transform: translateY(-2px) scale(1.02); }
   &:active { transform: translateY(0) scale(0.98); }
