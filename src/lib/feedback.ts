@@ -53,7 +53,9 @@ export function playSound(kind: FeedbackKind) {
       beep(880, 0.18, 0.12, "sine");
       break;
     case "message":
-      beep(720, 0.1, 0, "triangle", 0.1);
+      // soft, woody click
+      beep(180, 0.05, 0, "sine", 0.08);
+      beep(90, 0.07, 0.005, "sine", 0.06);
       break;
     case "leave":
       beep(420, 0.18, 0, "sine", 0.1);
