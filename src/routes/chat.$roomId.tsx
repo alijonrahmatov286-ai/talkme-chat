@@ -1,10 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut, MoreVertical, Flag, Ban } from "lucide-react";
+import { ArrowLeft, Send, LogOut } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
@@ -34,11 +33,7 @@ function ChatPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [reportOpen, setReportOpen] = useState(false);
-  const [blockOpen, setBlockOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const partnerId = room ? (room.user_a === userId ? room.user_b : room.user_a) : null;
 
   // load room + history
   useEffect(() => {
@@ -118,29 +113,6 @@ function ChatPage() {
     navigate({ to: "/" });
   };
 
-  const submitReport = async (reason: string) => {
-    if (!partnerId) return;
-    await supabase.from("user_reports").insert({
-      reporter_id: userId,
-      reported_id: partnerId,
-      room_id: roomId,
-      reason,
-    });
-    setReportOpen(false);
-    toast.success(t("reported"));
-  };
-
-  const confirmBlock = async () => {
-    if (!partnerId) return;
-    await supabase.from("user_blocks").insert({
-      blocker_id: userId,
-      blocked_id: partnerId,
-    });
-    setBlockOpen(false);
-    toast.success(t("blocked"));
-    await leave();
-  };
-
   return (
     <main className="mx-auto flex h-[100dvh] max-w-md flex-col px-4 py-3">
       <header className="card-soft mb-3 flex items-center justify-between gap-2 px-4 py-2.5 animate-fade-up">
@@ -163,81 +135,10 @@ function ChatPage() {
             {partnerLeft ? t("partnerLeft") : t("connected")}
           </div>
         </div>
-        <div className="relative">
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            className="btn-pill btn-ghost-pill !p-2.5"
-            aria-label={t("more")}
-          >
-            <MoreVertical className="h-5 w-5" />
-          </button>
-          {menuOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
-              <div className="card-soft absolute right-0 top-12 z-20 w-48 overflow-hidden p-1 animate-fade-up">
-                <button
-                  onClick={() => { setMenuOpen(false); setReportOpen(true); }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-accent"
-                >
-                  <Flag className="h-4 w-4" />
-                  {t("report")}
-                </button>
-                <button
-                  onClick={() => { setMenuOpen(false); setBlockOpen(true); }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm text-destructive hover:bg-accent"
-                >
-                  <Ban className="h-4 w-4" />
-                  {t("block")}
-                </button>
-                <div className="my-1 h-px bg-border" />
-                <button
-                  onClick={() => { setMenuOpen(false); leave(); }}
-                  className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-accent"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {t("leave")}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
+        <button onClick={leave} className="btn-pill btn-ghost-pill !p-2.5" aria-label={t("leave")}>
+          <LogOut className="h-5 w-5" />
+        </button>
       </header>
-
-      {reportOpen && (
-        <Sheet onClose={() => setReportOpen(false)}>
-          <h3 className="text-lg font-semibold">{t("reportTitle")}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{t("reportHint")}</p>
-          <div className="mt-4 space-y-2">
-            {(["reasonSpam", "reasonAbuse", "reasonAge", "reasonOther"] as const).map((k) => (
-              <button
-                key={k}
-                onClick={() => submitReport(t(k))}
-                className="btn-pill btn-ghost-pill w-full justify-start !px-4"
-              >
-                {t(k)}
-              </button>
-            ))}
-          </div>
-          <button onClick={() => setReportOpen(false)} className="btn-pill btn-ghost-pill mt-3 w-full">
-            {t("cancel")}
-          </button>
-        </Sheet>
-      )}
-
-      {blockOpen && (
-        <Sheet onClose={() => setBlockOpen(false)}>
-          <h3 className="text-lg font-semibold">{t("blockTitle")}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">{t("blockHint")}</p>
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            <button onClick={() => setBlockOpen(false)} className="btn-pill btn-ghost-pill">
-              {t("cancel")}
-            </button>
-            <button onClick={confirmBlock} className="btn-pill bg-destructive text-destructive-foreground">
-              {t("confirm")}
-            </button>
-          </div>
-        </Sheet>
-      )}
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
         {messages.map((m) => {
@@ -296,16 +197,5 @@ function ChatPage() {
         </form>
       )}
     </main>
-  );
-}
-
-function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
-      <div className="absolute inset-0 bg-black/50 animate-fade-up" onClick={onClose} />
-      <div className="card-soft relative z-10 m-3 w-full max-w-md p-5 animate-fade-up">
-        {children}
-      </div>
-    </div>
   );
 }
