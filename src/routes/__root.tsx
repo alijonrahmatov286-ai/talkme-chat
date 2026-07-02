@@ -14,20 +14,47 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AppProvider } from "../lib/app-context";
 import { feedback } from "../lib/feedback";
 
+const INTERACTIVE_SELECTOR =
+  'button, a, [role="button"], [role="switch"], [role="tab"], [role="menuitem"], [role="option"], label[for], input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"], [data-tap]';
+
+function findInteractive(target: EventTarget | null): HTMLElement | null {
+  const el = target as HTMLElement | null;
+  if (!el || typeof el.closest !== "function") return null;
+  const hit = el.closest(INTERACTIVE_SELECTOR) as HTMLElement | null;
+  if (!hit) return null;
+  if (hit.hasAttribute("disabled") || hit.getAttribute("aria-disabled") === "true") return null;
+  return hit;
+}
+
 function useGlobalClickFeedback() {
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const el = target.closest(
-        'button, a, [role="button"], [role="switch"], [role="tab"], label[for], input[type="checkbox"], input[type="radio"], input[type="submit"], input[type="button"]',
-      ) as HTMLElement | null;
+    const pressed = new WeakSet<HTMLElement>();
+
+    const onDown = (e: Event) => {
+      const el = findInteractive(e.target);
       if (!el) return;
-      if (el.hasAttribute("disabled") || el.getAttribute("aria-disabled") === "true") return;
-      feedback("message");
+      pressed.add(el);
+      el.setAttribute("data-pressed", "");
+      feedback("tap");
     };
-    document.addEventListener("click", handler, true);
-    return () => document.removeEventListener("click", handler, true);
+    const onUp = (e: Event) => {
+      const el = findInteractive(e.target);
+      if (el && pressed.has(el)) {
+        el.removeAttribute("data-pressed");
+        pressed.delete(el);
+      }
+      // Also clear any stragglers if pointer released outside
+      document.querySelectorAll('[data-pressed]').forEach((n) => n.removeAttribute("data-pressed"));
+    };
+
+    document.addEventListener("pointerdown", onDown, true);
+    document.addEventListener("pointerup", onUp, true);
+    document.addEventListener("pointercancel", onUp, true);
+    return () => {
+      document.removeEventListener("pointerdown", onDown, true);
+      document.removeEventListener("pointerup", onUp, true);
+      document.removeEventListener("pointercancel", onUp, true);
+    };
   }, []);
 }
 
