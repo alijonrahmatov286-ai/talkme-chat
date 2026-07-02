@@ -218,3 +218,43 @@
   color: var(--foreground);
   border: 1px solid color-mix(in oklab, var(--brand) 35%, transparent);
 }
+
+/* Global iOS-style micro-press for every interactive element.
+   Applies to buttons, links, role=button, tabs, switches, labels, chips, etc.
+   Uses [data-pressed] set by the global pointerdown handler for instant feedback,
+   with :active as a fallback. */
+button,
+a,
+label[for],
+[role="button"],
+[role="switch"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+[data-tap] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: transform 420ms cubic-bezier(.22,1,.36,1), opacity 260ms ease, filter 260ms ease, background 260ms ease, color 260ms ease, border-color 260ms ease;
+}
+
+button:active,
+a:active,
+label[for]:active,
+[role="button"]:active,
+[role="switch"]:active,
+[role="tab"]:active,
+[role="menuitem"]:active,
+[role="option"]:active,
+[data-tap]:active,
+[data-pressed] {
+  transform: scale(0.965);
+  filter: brightness(0.94);
+  transition-duration: 120ms;
+}
+
+button:disabled,
+button[aria-disabled="true"],
+[role="button"][aria-disabled="true"] {
+  transform: none !important;
+  filter: none !important;
+}
