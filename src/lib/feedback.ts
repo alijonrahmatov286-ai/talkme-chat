@@ -1,7 +1,7 @@
 // Sound + vibration feedback. Reads user prefs from localStorage so it works
 // even from non-React call sites (realtime channel handlers).
 
-export type FeedbackKind = "match" | "message" | "leave";
+export type FeedbackKind = "match" | "message" | "leave" | "tap";
 
 function prefOn(key: string, fallback = true): boolean {
   if (typeof window === "undefined") return false;
@@ -58,6 +58,9 @@ export function playSound(kind: FeedbackKind) {
     case "leave":
       beep(420, 0.18, 0, "sine", 0.1);
       break;
+    case "tap":
+      beep(1100, 0.03, 0, "sine", 0.05);
+      break;
   }
 }
 
@@ -82,6 +85,9 @@ export function feedback(kind: FeedbackKind) {
       break;
     case "leave":
       vibrate([60, 40, 60]);
+      break;
+    case "tap":
+      vibrate(8);
       break;
   }
 }
