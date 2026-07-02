@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut } from "lucide-react";
+import { ArrowLeft, Send, LogOut, Wifi, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
+import { useNetworkStatus } from "@/lib/use-network";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
