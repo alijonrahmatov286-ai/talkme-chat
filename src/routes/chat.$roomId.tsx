@@ -34,6 +34,8 @@ function ChatPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // load room + history
@@ -55,6 +57,7 @@ function ChatPage() {
         .eq("room_id", roomId)
         .order("created_at", { ascending: true });
       if (!cancelled && m) setMessages(m as Message[]);
+      if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
@@ -90,7 +93,7 @@ function ChatPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [roomId]);
+  }, [roomId, userId]);
 
   // auto-scroll
   useEffect(() => {
@@ -114,8 +117,33 @@ function ChatPage() {
     navigate({ to: "/" });
   };
 
+  const showNetworkBar = network === "offline" || network === "connecting";
+
   return (
     <main className="mx-auto flex h-[100dvh] max-w-md flex-col px-4 py-3">
+      {showNetworkBar && (
+        <div className="mb-2 flex justify-center animate-fade-up">
+          <div
+            className={
+              "network-bar " +
+              (network === "offline" ? "network-bar-offline" : "network-bar-connecting")
+            }
+          >
+            {network === "offline" ? (
+              <>
+                <WifiOff className="h-3 w-3" />
+                {t("noConnection")}
+              </>
+            ) : (
+              <>
+                <div className="ios-spinner ios-spinner-brand" />
+                {t("connecting")}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       <header className="card-soft mb-3 flex items-center justify-between gap-2 px-4 py-2.5 animate-fade-up">
         <button
           onClick={leave}
@@ -142,6 +170,13 @@ function ChatPage() {
       </header>
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
+        {loading && (
+          <div className="flex flex-col items-center justify-center gap-3 py-12 animate-fade-up">
+            <div className="ios-spinner ios-spinner-brand" style={{ width: "2rem", height: "2rem", borderWidth: "3px" }} />
+            <span className="text-xs text-muted-foreground">{t("loadingMessages")}</span>
+          </div>
+        )}
+
         {messages.map((m) => {
           const mine = m.sender_id === userId;
           return (
