@@ -1,7 +1,7 @@
 // Sound + vibration feedback. Reads user prefs from localStorage so it works
 // even from non-React call sites (realtime channel handlers).
 
-export type FeedbackKind = "match" | "message" | "leave";
+export type FeedbackKind = "match" | "message" | "leave" | "tap";
 
 function prefOn(key: string, fallback = true): boolean {
   if (typeof window === "undefined") return false;
