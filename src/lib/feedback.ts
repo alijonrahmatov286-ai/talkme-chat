@@ -86,5 +86,8 @@ export function feedback(kind: FeedbackKind) {
     case "leave":
       vibrate([60, 40, 60]);
       break;
+    case "tap":
+      vibrate(8);
+      break;
   }
 }
