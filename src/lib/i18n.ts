@@ -42,6 +42,9 @@ export const translations = {
     feedback: "Feedback",
     sound: "Sound",
     vibration: "Vibration",
+    connecting: "Connecting…",
+    noConnection: "No Connection",
+    loadingMessages: "Loading messages…",
   },
   ru: {
     appName: "TalkMe",
@@ -84,6 +87,9 @@ export const translations = {
     feedback: "Уведомления",
     sound: "Звук",
     vibration: "Вибрация",
+    connecting: "Подключение…",
+    noConnection: "Нет соединения",
+    loadingMessages: "Загрузка сообщений…",
   },
 } as const;
 
