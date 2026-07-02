@@ -58,6 +58,9 @@ export function playSound(kind: FeedbackKind) {
     case "leave":
       beep(420, 0.18, 0, "sine", 0.1);
       break;
+    case "tap":
+      beep(1100, 0.03, 0, "sine", 0.05);
+      break;
   }
 }
 
