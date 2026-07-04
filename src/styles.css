@@ -112,22 +112,34 @@
 }
 
 [data-theme="light"] {
-  --background: oklch(0.985 0.003 280);
-  --foreground: oklch(0.18 0.02 280);
+  --background: oklch(0.97 0.006 80);
+  --foreground: oklch(0.22 0.02 280);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.18 0.02 280);
+  --card-foreground: oklch(0.22 0.02 280);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.18 0.02 280);
+  --popover-foreground: oklch(0.22 0.02 280);
   --primary: oklch(0.55 0.18 340);
   --primary-foreground: oklch(0.98 0.005 280);
-  --secondary: oklch(0.94 0.01 280);
-  --secondary-foreground: oklch(0.18 0.02 280);
-  --muted: oklch(0.94 0.01 280);
-  --muted-foreground: oklch(0.45 0.02 280);
-  --accent: oklch(0.92 0.03 320);
-  --accent-foreground: oklch(0.18 0.02 280);
-  --border: oklch(0.9 0.01 280);
-  --input: oklch(0.94 0.01 280);
+  --secondary: oklch(0.955 0.008 80);
+  --secondary-foreground: oklch(0.22 0.02 280);
+  --muted: oklch(0.955 0.008 80);
+  --muted-foreground: oklch(0.5 0.015 280);
+  --accent: oklch(0.94 0.02 320);
+  --accent-foreground: oklch(0.22 0.02 280);
+  --border: oklch(0.9 0.008 80);
+  --input: oklch(0.94 0.008 80);
+}
+
+/* In light mode the "white" brand would disappear on white — swap it to dark ink. */
+[data-theme="light"][data-brand="white"] {
+  --brand: oklch(0.22 0.02 280);
+  --brand-foreground: oklch(0.98 0.005 280);
+  --brand-glow: oklch(0.22 0.02 280 / 0.28);
+}
+
+/* Soften brand glows in light mode so cards don't look bruised. */
+[data-theme="light"] {
+  --brand-glow: color-mix(in oklab, var(--brand) 35%, transparent);
 }
 
 @layer base {
@@ -137,6 +149,12 @@
       radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklab, var(--brand) 18%, transparent), transparent),
       radial-gradient(ellipse 60% 50% at 100% 100%, color-mix(in oklab, var(--brand) 12%, transparent), transparent),
       var(--color-background);
+  }
+  [data-theme="light"] body {
+    background:
+      radial-gradient(ellipse 90% 55% at 50% -10%, color-mix(in oklab, var(--brand) 22%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 100% 110%, color-mix(in oklab, var(--brand) 12%, transparent), transparent 70%),
+      linear-gradient(180deg, oklch(0.985 0.006 80) 0%, oklch(0.955 0.01 60) 100%);
     color: var(--color-foreground);
     min-height: 100vh;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif;
@@ -182,6 +200,19 @@
   border: 1px solid var(--border);
   border-radius: 1.5rem;
   backdrop-filter: blur(12px);
+}
+
+[data-theme="light"] .card-soft,
+[data-theme="light"] [class*="card-soft"] {
+  background: oklch(1 0 0 / 0.85);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.9) inset, 0 8px 30px -18px oklch(0.2 0.02 280 / 0.18);
+}
+[data-theme="light"] .btn-ghost-pill {
+  background: oklch(1 0 0 / 0.7);
+  box-shadow: 0 1px 2px oklch(0.2 0.02 280 / 0.06);
+}
+[data-theme="light"] .btn-ghost-pill:hover {
+  background: oklch(1 0 0 / 0.95);
 }
 
 @utility pulse-dot {
