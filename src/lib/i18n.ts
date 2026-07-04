@@ -43,6 +43,7 @@ export const LANGUAGES: { code: Lang; label: string; native: string; flag: strin
   { code: "th", label: "Thai", native: "ไทย", flag: "🇹🇭" },
 ];
 
+type Dict = Record<string, string>;
 const en = {
   appName: "TalkMe",
   tagline: "Anonymous chat, real people.",
