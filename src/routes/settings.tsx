@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff } from "lucide-react";
-import { useApp, type Brand } from "@/lib/app-context";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown } from "lucide-react";
+import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
-import type { Lang } from "@/lib/i18n";
+import { LANGUAGES, type Lang } from "@/lib/i18n";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -12,7 +13,14 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const { t, lang, setLang, brand, setBrand, sound, setSound, vibration, setVibration } = useApp();
+  const {
+    t, lang, setLang, brand, setBrand,
+    theme, setTheme,
+    sound, setSound, vibration, setVibration,
+  } = useApp();
+
+  const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
+  const currentBrand = BRANDS.find((b) => b.code === brand) ?? BRANDS[0];
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
@@ -23,64 +31,141 @@ function SettingsPage() {
         <h1 className="text-xl font-bold">{t("settings")}</h1>
       </header>
 
+      {/* Language */}
       <section className="card-soft mb-4 p-5 animate-fade-up">
         <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t("language")}
         </h2>
-        <div className="flex gap-2">
-          {([
-            ["ru", "Русский"],
-            ["en", "English"],
-          ] as [Lang, string][]).map(([code, label]) => (
-            <button
-              key={code}
-              onClick={() => setLang(code)}
-              className={
-                "btn-pill flex-1 text-sm " +
-                (lang === code ? "btn-brand" : "btn-ghost-pill")
-              }
-            >
-              {label}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="btn-pill btn-ghost-pill w-full justify-between !rounded-2xl !px-4 !py-3">
+              <span className="flex items-center gap-3">
+                <span className="text-xl leading-none">{currentLang.flag}</span>
+                <span className="font-medium">{currentLang.native}</span>
+              </span>
+              <ChevronDown className="h-5 w-5 opacity-70" />
             </button>
-          ))}
-        </div>
+          </PopoverTrigger>
+          <PopoverContent
+            align="center"
+            sideOffset={8}
+            className="w-[calc(100vw-2.5rem)] max-w-sm rounded-3xl border-border bg-popover/95 p-2 backdrop-blur-xl"
+          >
+            <div className="mb-2 px-2 pt-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {t("chooseLanguage")}
+            </div>
+            <div className="max-h-[60vh] overflow-y-auto pr-1">
+              {LANGUAGES.map((l) => {
+                const active = l.code === lang;
+                return (
+                  <button
+                    key={l.code}
+                    onClick={() => setLang(l.code as Lang)}
+                    className={
+                      "flex w-full items-center justify-between rounded-2xl px-3 py-2.5 text-left transition-colors " +
+                      (active ? "bg-accent text-accent-foreground" : "hover:bg-accent/60")
+                    }
+                  >
+                    <span className="flex items-center gap-3">
+                      <span className="text-xl leading-none">{l.flag}</span>
+                      <span className="text-sm font-medium">{l.native}</span>
+                      <span className="text-xs text-muted-foreground">{l.label}</span>
+                    </span>
+                    {active && <Check className="h-4 w-4" />}
+                  </button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
       </section>
 
-      <section className="card-soft p-5 animate-fade-up">
+      {/* Brand color */}
+      <section className="card-soft mb-4 p-5 animate-fade-up">
         <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t("buttonColor")}
         </h2>
-        <div className="space-y-2">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button className="btn-pill btn-ghost-pill w-full justify-between !rounded-2xl !px-4 !py-3">
+              <span className="flex items-center gap-3">
+                <span
+                  className="h-7 w-7 rounded-full border border-border shadow-inner"
+                  style={{ background: currentBrand.color }}
+                />
+                <span className="font-medium">{currentBrand.label}</span>
+              </span>
+              <ChevronDown className="h-5 w-5 opacity-70" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="center"
+            sideOffset={8}
+            className="w-[calc(100vw-2.5rem)] max-w-sm rounded-3xl border-border bg-popover/95 p-3 backdrop-blur-xl"
+          >
+            <div className="mb-2 px-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {t("chooseColor")}
+            </div>
+            <div className="grid grid-cols-5 gap-2">
+              {BRANDS.map((b) => {
+                const active = b.code === brand;
+                return (
+                  <button
+                    key={b.code}
+                    onClick={() => setBrand(b.code as Brand)}
+                    aria-label={b.label}
+                    className={
+                      "relative flex aspect-square items-center justify-center rounded-2xl border transition-all " +
+                      (active
+                        ? "border-foreground/60 scale-105"
+                        : "border-border hover:border-foreground/30")
+                    }
+                    style={{ background: b.color }}
+                  >
+                    {active && (
+                      <Check
+                        className="h-5 w-5"
+                        style={{ color: "oklch(0.15 0.02 280)" }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </section>
+
+      {/* Theme */}
+      <section className="card-soft mb-4 p-5 animate-fade-up">
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t("appearance")}
+        </h2>
+        <div className="flex gap-2">
           {([
-            ["white", t("white"), "oklch(0.98 0.005 280)"],
-            ["pink", t("pink"), "oklch(0.78 0.15 350)"],
-            ["blue", t("blue"), "oklch(0.72 0.16 240)"],
-          ] as [Brand, string, string][]).map(([code, label, color]) => {
-            const active = brand === code;
+            ["dark", t("dark"), Moon],
+            ["light", t("light"), Sun],
+          ] as const).map(([code, label, Icon]) => {
+            const active = theme === code;
             return (
               <button
                 key={code}
-                onClick={() => setBrand(code)}
+                onClick={() => setTheme(code)}
                 className={
-                  "btn-pill w-full justify-between !rounded-2xl !px-4 !py-3 " +
+                  "btn-pill flex-1 !rounded-2xl !py-3 text-sm " +
                   (active ? "btn-brand" : "btn-ghost-pill")
                 }
               >
-                <span className="flex items-center gap-3">
-                  <span
-                    className="h-7 w-7 rounded-full border border-border shadow-inner"
-                    style={{ background: color }}
-                  />
-                  <span className="font-medium">{label}</span>
-                </span>
-                {active && <Check className="h-5 w-5" />}
+                <Icon className="h-4 w-4" />
+                {label}
               </button>
             );
           })}
         </div>
       </section>
 
-      <section className="card-soft mt-4 p-5 animate-fade-up">
+      {/* Feedback */}
+      <section className="card-soft p-5 animate-fade-up">
         <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t("feedback")}
         </h2>
