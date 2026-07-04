@@ -143,7 +143,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-const brandBootScript = `(function(){try{var b=JSON.parse(localStorage.getItem('talkme_brand'));if(b==='white'||b==='pink'||b==='blue'){document.documentElement.setAttribute('data-brand',b);}else{document.documentElement.setAttribute('data-brand','white');}var l=JSON.parse(localStorage.getItem('talkme_lang'));if(l==='ru'||l==='en'){document.documentElement.lang=l;}}catch(e){document.documentElement.setAttribute('data-brand','white');}})();`;
+const brandBootScript = `(function(){try{var brands=['white','pink','blue','purple','green','orange','red','yellow','teal','mint'];var b=JSON.parse(localStorage.getItem('talkme_brand'));document.documentElement.setAttribute('data-brand',brands.indexOf(b)>-1?b:'white');var th=JSON.parse(localStorage.getItem('talkme_theme'));document.documentElement.setAttribute('data-theme',th==='light'?'light':'dark');var l=JSON.parse(localStorage.getItem('talkme_lang'));if(typeof l==='string'){document.documentElement.lang=l;}}catch(e){document.documentElement.setAttribute('data-brand','white');document.documentElement.setAttribute('data-theme','dark');}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
