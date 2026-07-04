@@ -202,6 +202,19 @@
   backdrop-filter: blur(12px);
 }
 
+[data-theme="light"] .card-soft,
+[data-theme="light"] [class*="card-soft"] {
+  background: oklch(1 0 0 / 0.85);
+  box-shadow: 0 1px 0 oklch(1 0 0 / 0.9) inset, 0 8px 30px -18px oklch(0.2 0.02 280 / 0.18);
+}
+[data-theme="light"] .btn-ghost-pill {
+  background: oklch(1 0 0 / 0.7);
+  box-shadow: 0 1px 2px oklch(0.2 0.02 280 / 0.06);
+}
+[data-theme="light"] .btn-ghost-pill:hover {
+  background: oklch(1 0 0 / 0.95);
+}
+
 @utility pulse-dot {
   position: relative;
   display: inline-block;
