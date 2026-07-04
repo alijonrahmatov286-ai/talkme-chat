@@ -149,6 +149,12 @@
       radial-gradient(ellipse 80% 60% at 50% 0%, color-mix(in oklab, var(--brand) 18%, transparent), transparent),
       radial-gradient(ellipse 60% 50% at 100% 100%, color-mix(in oklab, var(--brand) 12%, transparent), transparent),
       var(--color-background);
+  }
+  [data-theme="light"] body {
+    background:
+      radial-gradient(ellipse 90% 55% at 50% -10%, color-mix(in oklab, var(--brand) 22%, transparent), transparent 70%),
+      radial-gradient(ellipse 70% 50% at 100% 110%, color-mix(in oklab, var(--brand) 12%, transparent), transparent 70%),
+      linear-gradient(180deg, oklch(0.985 0.006 80) 0%, oklch(0.955 0.01 60) 100%);
     color: var(--color-foreground);
     min-height: 100vh;
     font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Inter, sans-serif;
