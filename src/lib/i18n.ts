@@ -95,7 +95,7 @@ const en = {
   chooseColor: "Choose color",
 } as const;
 
-const ru: typeof en = {
+const ru: Record<keyof typeof en, string> = {
   ...en,
   tagline: "Анонимный чат с живыми людьми.",
   online: "сейчас онлайн",
