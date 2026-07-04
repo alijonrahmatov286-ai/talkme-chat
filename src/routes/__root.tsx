@@ -147,7 +147,7 @@ const brandBootScript = `(function(){try{var brands=['white','pink','blue','purp
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="ru" data-brand="white">
+    <html lang="ru" data-brand="white" data-theme="dark">
       <head>
         <HeadContent />
         <script dangerouslySetInnerHTML={{ __html: brandBootScript }} />
