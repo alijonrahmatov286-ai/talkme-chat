@@ -148,7 +148,8 @@ const ru: Record<keyof typeof en, string> = {
   chooseColor: "Выберите цвет",
 };
 
-export const translations: Record<Lang, typeof en> = {
+type TranslationDict = Record<keyof typeof en, string>;
+export const translations: Record<Lang, TranslationDict> = {
   en, ru,
   es: en, fr: en, de: en, it: en, pt: en, tr: en, uk: ru, pl: en,
   nl: en, sv: en, ar: en, hi: en, zh: en, ja: en, ko: en, id: en, vi: en, th: en,
