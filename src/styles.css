@@ -188,6 +188,7 @@
   color: var(--foreground);
   border: 1px solid var(--border);
   backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
   &:hover { background: var(--card); }
 }
 
