@@ -58,6 +58,13 @@
   --brand: oklch(0.78 0.15 350);
   --brand-foreground: oklch(0.2 0.03 350);
   --brand-glow: oklch(0.85 0.18 350 / 0.5);
+
+  /* Dark-mode shadows (subtle) */
+  --shadow-card: 0 8px 32px -8px oklch(0 0 0 / 0.3), 0 2px 6px -2px oklch(0 0 0 / 0.2);
+  --shadow-sm: 0 2px 8px -2px oklch(0 0 0 / 0.15);
+  --shadow-elevated: 0 20px 48px -12px oklch(0 0 0 / 0.35), 0 4px 12px -4px oklch(0 0 0 / 0.25);
+  --shadow-popover: 0 16px 40px -8px oklch(0 0 0 / 0.35);
+  --shadow-inset: inset 0 2px 4px oklch(0 0 0 / 0.1);
 }
 
 [data-brand="white"] {
@@ -128,6 +135,13 @@
   --accent-foreground: oklch(0.18 0.02 280);
   --border: oklch(0.9 0.01 280);
   --input: oklch(0.94 0.01 280);
+
+  /* Light-mode shadows */
+  --shadow-card: 0 8px 32px -8px oklch(0.5 0.02 280 / 0.12), 0 2px 6px -2px oklch(0.5 0.02 280 / 0.08);
+  --shadow-sm: 0 2px 8px -2px oklch(0.5 0.02 280 / 0.1);
+  --shadow-elevated: 0 20px 48px -12px oklch(0.5 0.02 280 / 0.15), 0 4px 12px -4px oklch(0.5 0.02 280 / 0.1);
+  --shadow-popover: 0 16px 40px -8px oklch(0.5 0.02 280 / 0.18);
+  --shadow-inset: inset 0 2px 4px oklch(0.5 0.02 280 / 0.06);
 }
 
 @layer base {
@@ -174,6 +188,7 @@
   color: var(--foreground);
   border: 1px solid var(--border);
   backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
   &:hover { background: var(--card); }
 }
 
@@ -182,6 +197,7 @@
   border: 1px solid var(--border);
   border-radius: 1.5rem;
   backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-card);
 }
 
 @utility pulse-dot {
