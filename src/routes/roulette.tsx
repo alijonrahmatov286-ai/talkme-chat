@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
 import { feedback } from "@/lib/feedback";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/roulette")({
   head: () => ({
     meta: [
       { title: "TalkMe — Anonymous chat" },
