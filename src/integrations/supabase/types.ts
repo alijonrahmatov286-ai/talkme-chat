@@ -38,6 +38,89 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
+      dm_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dm_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      friendships: {
+        Row: {
+          created_at: string
+          friend_id: string
+          id: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          friend_id: string
+          id?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          friend_id?: string
+          id?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
@@ -84,6 +167,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          age: number | null
+          avatar_emoji: string
+          bio: string | null
+          created_at: string
+          display_name: string | null
+          gender: string | null
+          last_seen: string
+          nickname: string
+          user_id: string
+        }
+        Insert: {
+          age?: number | null
+          avatar_emoji?: string
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          gender?: string | null
+          last_seen?: string
+          nickname: string
+          user_id: string
+        }
+        Update: {
+          age?: number | null
+          avatar_emoji?: string
+          bio?: string | null
+          created_at?: string
+          display_name?: string | null
+          gender?: string | null
+          last_seen?: string
+          nickname?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      typing_status: {
+        Row: {
+          conversation_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          conversation_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          conversation_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "typing_status_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_blocks: {
         Row: {
@@ -181,6 +326,7 @@ export type Database = {
       }
       find_room_for_user: { Args: { p_user_id: string }; Returns: string }
       online_count: { Args: never; Returns: number }
+      open_conversation: { Args: { p_a: string; p_b: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
