@@ -25,7 +25,7 @@ function SettingsPage() {
     sound, setSound, vibration, setVibration,
     userId,
   } = useApp();
-  const navigate = useNavigate();
+  
   const { profile, refresh } = useProfile(userId);
 
   const [displayName, setDisplayName] = useState("");
