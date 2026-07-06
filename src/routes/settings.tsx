@@ -1,9 +1,15 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown } from "lucide-react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, LogOut, Save } from "lucide-react";
 import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
 import { LANGUAGES, type Lang } from "@/lib/i18n";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useProfile } from "@/hooks/use-profile";
+import { supabase } from "@/integrations/supabase/client";
+import { BottomNav } from "@/components/bottom-nav";
+
+const EMOJIS = ["👤", "😎", "🦊", "🐼", "🐧", "🦁", "🐵", "🐨", "🦄", "🐸", "🐙", "🦋", "🌸", "🍀", "⚡️", "🔥", "🌙", "⭐️", "🎧", "🎮"];
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -17,19 +23,113 @@ function SettingsPage() {
     t, lang, setLang, brand, setBrand,
     theme, setTheme,
     sound, setSound, vibration, setVibration,
+    userId,
   } = useApp();
+  const navigate = useNavigate();
+  const { profile, refresh } = useProfile(userId);
+
+  const [displayName, setDisplayName] = useState("");
+  const [emoji, setEmoji] = useState("👤");
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    if (profile) {
+      setDisplayName(profile.display_name ?? "");
+      setEmoji(profile.avatar_emoji);
+    }
+  }, [profile?.user_id]);
+
+  const saveProfile = async () => {
+    if (!profile) return;
+    await supabase
+      .from("profiles")
+      .update({ display_name: displayName.trim() || null, avatar_emoji: emoji })
+      .eq("user_id", userId);
+    setSaved(true);
+    feedback("message");
+    await refresh();
+    setTimeout(() => setSaved(false), 1500);
+  };
+
+  const resetAccount = () => {
+    if (!confirm(t("resetAccountConfirm"))) return;
+    try {
+      localStorage.removeItem("talkme_uid");
+      localStorage.removeItem("talkme_profile");
+    } catch {}
+    window.location.href = "/";
+  };
 
   const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
   const currentBrand = BRANDS.find((b) => b.code === brand) ?? BRANDS[0];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-10 pt-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-28 pt-8">
       <header className="mb-6 flex items-center gap-3 animate-fade-up">
         <Link to="/" className="btn-pill btn-ghost-pill !p-3" aria-label={t("back")}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-xl font-bold">{t("settings")}</h1>
       </header>
+
+      {/* Profile */}
+      {profile && (
+        <section className="card-soft mb-4 p-5 animate-fade-up">
+          <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t("profile")}
+          </h2>
+          <div className="mb-4 flex items-center gap-3">
+            <div className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-2xl">
+              {emoji}
+            </div>
+            <div>
+              <div className="font-semibold">@{profile.nickname}</div>
+              <div className="text-xs text-muted-foreground">{t("profileNickname")}</div>
+            </div>
+          </div>
+
+          <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t("profileDisplayName")}
+          </label>
+          <input
+            value={displayName}
+            maxLength={30}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="mb-3 w-full rounded-2xl border border-border bg-secondary/40 px-4 py-3 text-sm outline-none"
+          />
+
+          <label className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            {t("profileAvatar")}
+          </label>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {EMOJIS.map((e) => {
+              const active = e === emoji;
+              return (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setEmoji(e)}
+                  className={
+                    "grid h-10 w-10 place-items-center rounded-2xl border text-lg transition-all " +
+                    (active
+                      ? "border-foreground/60 bg-accent scale-110"
+                      : "border-border bg-secondary/40")
+                  }
+                >
+                  {e}
+                </button>
+              );
+            })}
+          </div>
+
+          <button onClick={saveProfile} className="btn-pill btn-brand w-full">
+            <Save className="h-4 w-4" />
+            {saved ? t("saved") : t("save")}
+          </button>
+        </section>
+      )}
+
+
 
       {/* Language */}
       <section className="card-soft mb-4 p-5 animate-fade-up">

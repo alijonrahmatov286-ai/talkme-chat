@@ -14,6 +14,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as RouletteRouteImport } from './routes/roulette'
 import { Route as PeopleRouteImport } from './routes/people'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as DmNicknameRouteImport } from './routes/dm.$nickname'
 import { Route as ChatRoomIdRouteImport } from './routes/chat.$roomId'
 
@@ -42,6 +43,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DmNicknameRoute = DmNicknameRouteImport.update({
   id: '/dm/$nickname',
   path: '/dm/$nickname',
@@ -54,6 +60,7 @@ const ChatRoomIdRoute = ChatRoomIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/people': typeof PeopleRoute
   '/roulette': typeof RouletteRoute
@@ -63,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/dm/$nickname': typeof DmNicknameRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/people': typeof PeopleRoute
   '/roulette': typeof RouletteRoute
@@ -73,6 +81,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/onboarding': typeof OnboardingRoute
   '/people': typeof PeopleRoute
   '/roulette': typeof RouletteRoute
@@ -84,6 +93,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/onboarding'
     | '/people'
     | '/roulette'
@@ -93,6 +103,7 @@ export interface FileRouteTypes {
     | '/dm/$nickname'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/onboarding'
     | '/people'
     | '/roulette'
@@ -102,6 +113,7 @@ export interface FileRouteTypes {
     | '/dm/$nickname'
   id:
     | '__root__'
+    | '/'
     | '/onboarding'
     | '/people'
     | '/roulette'
@@ -112,6 +124,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   OnboardingRoute: typeof OnboardingRoute
   PeopleRoute: typeof PeopleRoute
   RouletteRoute: typeof RouletteRoute
@@ -158,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dm/$nickname': {
       id: '/dm/$nickname'
       path: '/dm/$nickname'
@@ -176,6 +196,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   OnboardingRoute: OnboardingRoute,
   PeopleRoute: PeopleRoute,
   RouletteRoute: RouletteRoute,
