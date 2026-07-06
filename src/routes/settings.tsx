@@ -308,6 +308,18 @@ function SettingsPage() {
           </button>
         </div>
       </section>
+
+      {/* Reset */}
+      {profile && (
+        <section className="card-soft mt-4 p-5 animate-fade-up">
+          <button onClick={resetAccount} className="btn-pill btn-ghost-pill w-full text-destructive">
+            <LogOut className="h-4 w-4" />
+            {t("resetAccount")}
+          </button>
+        </section>
+      )}
+      <BottomNav />
     </main>
   );
 }
+
