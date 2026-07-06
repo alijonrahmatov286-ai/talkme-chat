@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { MessageCircle, Phone } from "lucide-react";
+import { MessageCircle, Users, Shuffle, Settings as SettingsIcon } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 
 export function BottomNav() {
@@ -7,14 +7,16 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   const items = [
-    { to: "/", label: t("chatTab"), icon: MessageCircle },
-    { to: "/voice", label: t("voiceTab"), icon: Phone },
+    { to: "/", label: t("chatsTab"), icon: MessageCircle },
+    { to: "/people", label: t("peopleTab"), icon: Users },
+    { to: "/roulette", label: t("rouletteTab"), icon: Shuffle },
+    { to: "/settings", label: t("settings"), icon: SettingsIcon },
   ] as const;
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]">
       <div className="mx-auto max-w-md px-4 pb-3">
-        <div className="card-soft flex items-center justify-around gap-2 p-2">
+        <div className="card-soft flex items-center justify-around gap-1 p-2">
           {items.map((it) => {
             const active = pathname === it.to;
             const Icon = it.icon;
@@ -23,12 +25,12 @@ export function BottomNav() {
                 key={it.to}
                 to={it.to}
                 className={
-                  "btn-pill flex-1 !py-2.5 text-sm " +
+                  "btn-pill flex-1 !py-2.5 !px-2 text-[11px] " +
                   (active ? "btn-brand" : "btn-ghost-pill")
                 }
               >
                 <Icon className="h-4 w-4" />
-                {it.label}
+                <span className="hidden xs:inline">{it.label}</span>
               </Link>
             );
           })}

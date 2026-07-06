@@ -1,288 +1,180 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
-import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
-import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
-import { useOnlineCount } from "@/lib/use-online";
+import { createFileRoute, useNavigate, Link, Navigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { MessageCircle, Users, Search, Settings as SettingsIcon } from "lucide-react";
+import { useApp } from "@/lib/app-context";
+import { useProfile, type Profile } from "@/hooks/use-profile";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
-import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TalkMe — Anonymous chat" },
-      { name: "description", content: "Pick your gender, age and start chatting anonymously." },
+      { title: "TalkMe — Chats" },
+      { name: "description", content: "Chat with friends and meet new people." },
     ],
   }),
-  component: Home,
+  component: ChatsPage,
 });
 
-function Home() {
-  const { t, profile, setProfile, userId, brand } = useApp();
-  const online = useOnlineCount(userId);
-  const navigate = useNavigate();
-  const [searching, setSearching] = useState(false);
+interface ConvRow {
+  id: string;
+  user_a: string;
+  user_b: string;
+  last_message_at: string;
+}
+interface ChatItem {
+  conversation_id: string;
+  other: Profile;
+  last_message: string | null;
+  last_message_at: string;
+}
 
-  const [gender, setGender] = useState<Gender>(profile?.gender ?? "male");
-  const [age, setAge] = useState<number>(profile?.age ?? 21);
-  const [wantGender, setWantGender] = useState<Gender>(
-    (profile?.wantGender as Gender) ?? "female",
-  );
-  const [ageRange, setAgeRange] = useState<[number, number]>([
-    profile?.wantAgeMin ?? 18,
-    profile?.wantAgeMax ?? 20,
-  ]);
+function ChatsPage() {
+  const { userId, t } = useApp();
+  const { profile, loading: profileLoading } = useProfile(userId);
+  const [chats, setChats] = useState<ChatItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const draft: UserProfile = useMemo(
-    () => ({
-      userId,
-      gender,
-      age,
-      wantGender,
-      wantAgeMin: ageRange[0],
-      wantAgeMax: ageRange[1],
-    }),
-    [userId, gender, age, wantGender, ageRange],
-  );
-
-  // Poll for partner while searching
-  useEffect(() => {
-    if (!searching) return;
-    let cancelled = false;
-    const check = async () => {
-      const { data } = await supabase.rpc("find_room_for_user", { p_user_id: userId });
-      if (!cancelled && typeof data === "string" && data) {
-        setSearching(false);
-        feedback("match");
-        navigate({ to: "/chat/$roomId", params: { roomId: data } });
-      }
-    };
-    check();
-    const id = setInterval(check, 1500);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-    };
-  }, [searching, userId, navigate]);
-
-  const handleFind = async () => {
+  const load = async () => {
     if (!userId) return;
-    setProfile(draft);
-    setSearching(true);
-    const { data, error } = await supabase.rpc("find_or_queue_match", {
-      p_user_id: userId,
-      p_gender: gender,
-      p_age: age,
-      p_want_gender: wantGender,
-      p_want_age_min: ageRange[0],
-      p_want_age_max: ageRange[1],
-    });
-    if (error) {
-      console.error(error);
-      setSearching(false);
+    const { data: convs } = await supabase
+      .from("conversations")
+      .select("*")
+      .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+      .order("last_message_at", { ascending: false });
+    const rows = (convs as ConvRow[]) ?? [];
+    if (rows.length === 0) {
+      setChats([]);
+      setLoading(false);
       return;
     }
-    if (typeof data === "string" && data) {
-      setSearching(false);
-      feedback("match");
-      navigate({ to: "/chat/$roomId", params: { roomId: data } });
-    }
+    const otherIds = rows.map((r) => (r.user_a === userId ? r.user_b : r.user_a));
+    const { data: profs } = await supabase.from("profiles").select("*").in("user_id", otherIds);
+    const profMap = new Map<string, Profile>();
+    (profs as Profile[] | null)?.forEach((p) => profMap.set(p.user_id, p));
+    const { data: lastMsgs } = await supabase
+      .from("dm_messages")
+      .select("conversation_id, content, created_at")
+      .in("conversation_id", rows.map((r) => r.id))
+      .order("created_at", { ascending: false });
+    const lastMap = new Map<string, string>();
+    (lastMsgs ?? []).forEach((m: { conversation_id: string; content: string }) => {
+      if (!lastMap.has(m.conversation_id)) lastMap.set(m.conversation_id, m.content);
+    });
+    const items: ChatItem[] = rows
+      .map((r) => {
+        const oid = r.user_a === userId ? r.user_b : r.user_a;
+        const other = profMap.get(oid);
+        if (!other) return null;
+        return {
+          conversation_id: r.id,
+          other,
+          last_message: lastMap.get(r.id) ?? null,
+          last_message_at: r.last_message_at,
+        };
+      })
+      .filter(Boolean) as ChatItem[];
+    setChats(items);
+    setLoading(false);
   };
 
-  const handleCancel = async () => {
-    setSearching(false);
-    await supabase.from("waiting_queue").delete().eq("user_id", userId);
-  };
+  useEffect(() => {
+    if (!profile) return;
+    load();
+    const ch = supabase
+      .channel(`chats-${userId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "dm_messages" }, () => load())
+      .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, () => load())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(ch);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.user_id, userId]);
+
+  if (!profileLoading && !profile && userId) {
+    return <Navigate to="/onboarding" />;
+  }
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-28 pt-8">
-      <header className="mb-6 flex items-center justify-between animate-fade-up">
+      <header className="mb-5 flex items-center justify-between animate-fade-up">
         <div className="flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_10px_30px_-10px_var(--brand-glow)]">
             <MessageCircle className="h-5 w-5" />
           </div>
-          <span className="text-xl font-bold tracking-tight">TalkMe</span>
-        </div>
-        <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
-          <SettingsIcon className="h-5 w-5" />
-        </Link>
-      </header>
-
-      <section className="card-soft mb-6 flex items-center justify-between gap-3 px-5 py-4 animate-fade-up">
-        <div className="flex items-center gap-3">
-          <span className="pulse-dot" />
-          <div>
-            <div className="text-2xl font-bold tabular-nums">{online}</div>
-            <div className="text-xs text-muted-foreground">{t("online")}</div>
+          <div className="flex flex-col leading-tight">
+            <span className="text-xl font-bold tracking-tight">TalkMe</span>
+            {profile && (
+              <span className="text-xs text-muted-foreground">@{profile.nickname}</span>
+            )}
           </div>
         </div>
-        <div className="text-xs text-muted-foreground capitalize">{brand}</div>
-      </section>
+        <div className="flex items-center gap-2">
+          <Link to="/people" className="btn-pill btn-ghost-pill !p-3" aria-label={t("peopleTitle")}>
+            <Search className="h-5 w-5" />
+          </Link>
+          <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
+            <SettingsIcon className="h-5 w-5" />
+          </Link>
+        </div>
+      </header>
 
-      {searching ? (
-        <SearchingPanel onCancel={handleCancel} />
+      <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {t("chatsTitle")}
+      </h2>
+
+      {loading ? (
+        <div className="py-8 text-center text-sm text-muted-foreground">{t("loading")}</div>
+      ) : chats.length === 0 ? (
+        <div className="card-soft flex flex-col items-center gap-3 p-8 text-center animate-fade-up">
+          <div className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary">
+            <Users className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <p className="text-sm text-muted-foreground">{t("noChats")}</p>
+          <Link to="/people" className="btn-pill btn-brand mt-2 w-full">
+            <Users className="h-4 w-4" />
+            {t("findPeople")}
+          </Link>
+        </div>
       ) : (
-        <div className="card-soft p-5 animate-fade-up">
-          <h2 className="mb-1 text-lg font-semibold">{t("tagline")}</h2>
-          <p className="mb-5 text-sm text-muted-foreground">
-            <Sparkles className="mr-1 inline h-4 w-4" />
-            {t("findPartner")}
-          </p>
-
-          <Field label={t("yourGender")}>
-            <Segmented
-              value={gender}
-              onChange={(v) => setGender(v as Gender)}
-              options={[
-                { value: "male", label: t("male") },
-                { value: "female", label: t("female") },
-              ]}
-            />
-          </Field>
-
-          <Field label={`${t("yourAge")}: ${age === 30 ? "30+" : age === 18 ? "18–20" : "21–25"}`}>
-            <ChipGroup
-              value={age}
-              onChange={setAge}
-              options={[
-                { value: 18, label: "18–20" },
-                { value: 21, label: "21–25" },
-                { value: 30, label: "30+" },
-              ]}
-            />
-          </Field>
-
-          <div className="my-4 h-px bg-border" />
-
-          <Field label={t("lookingFor")}>
-            <Segmented
-              value={wantGender}
-              onChange={(v) => setWantGender(v as Gender)}
-              options={[
-                { value: "male", label: t("male") },
-                { value: "female", label: t("female") },
-              ]}
-            />
-          </Field>
-
-          <Field label={`${t("ageRange")}: ${ageRange[0] === 30 ? "30+" : `${ageRange[0]}–${ageRange[1]}`}`}>
-            <ChipGroup
-              value={`${ageRange[0]}-${ageRange[1]}`}
-              onChange={(v) => {
-                const [a, b] = String(v).split("-").map(Number);
-                setAgeRange([a, b]);
-              }}
-              options={[
-                { value: "18-20", label: "18–20" },
-                { value: "21-25", label: "21–25" },
-                { value: "30-99", label: "30+" },
-              ]}
-            />
-          </Field>
-
-          <button onClick={handleFind} className="btn-pill btn-brand mt-5 w-full text-base">
-            <MessageCircle className="h-5 w-5" />
-            {t("findPartner")}
-          </button>
+        <div className="space-y-2">
+          {chats.map((c) => (
+            <Link
+              key={c.conversation_id}
+              to="/dm/$nickname"
+              params={{ nickname: c.other.nickname }}
+              className="card-soft flex w-full items-center gap-3 px-4 py-3 text-left animate-fade-up"
+            >
+              <div className="grid h-11 w-11 place-items-center rounded-2xl bg-secondary text-xl">
+                {c.other.avatar_emoji}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-sm font-semibold">
+                  {c.other.display_name || `@${c.other.nickname}`}
+                </div>
+                <div className="truncate text-xs text-muted-foreground">
+                  {c.last_message ?? t("dmEmpty")}
+                </div>
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                {formatTime(c.last_message_at)}
+              </div>
+            </Link>
+          ))}
         </div>
       )}
+
       <BottomNav />
     </main>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <label className="mb-4 block">
-      <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        {label}
-      </span>
-      {children}
-    </label>
-  );
-}
-
-function Segmented({
-  value,
-  onChange,
-  options,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-}) {
-  return (
-    <div className="flex gap-2">
-      {options.map((o) => {
-        const active = o.value === value;
-        return (
-          <button
-            key={o.value}
-            type="button"
-            onClick={() => onChange(o.value)}
-            className={
-              "btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")
-            }
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function ChipGroup<T extends string | number>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T;
-  onChange: (v: T) => void;
-  options: Array<T | { value: T; label: string }>;
-}) {
-  const norm = options.map((o) =>
-    typeof o === "object" ? o : { value: o, label: String(o) },
-  );
-  return (
-    <div className="flex flex-wrap gap-2">
-      {norm.map((o) => {
-        const active = o.value === value;
-        return (
-          <button
-            key={String(o.value)}
-            type="button"
-            onClick={() => onChange(o.value)}
-            className={
-              "btn-pill !px-4 !py-2 text-sm " +
-              (active ? "btn-brand" : "btn-ghost-pill")
-            }
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function SearchingPanel({ onCancel }: { onCancel: () => void }) {
-  const { t } = useApp();
-  return (
-    <div className="card-soft flex flex-col items-center gap-5 p-8 animate-fade-up">
-      <div className="relative grid h-24 w-24 place-items-center">
-        <div className="absolute inset-0 animate-float rounded-full bg-[var(--brand)]/20 blur-2xl" />
-        <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_20px_50px_-10px_var(--brand-glow)]">
-          <MessageCircle className="h-9 w-9" />
-        </div>
-      </div>
-      <div className="h-1 w-40 overflow-hidden rounded-full bg-secondary">
-        <div className="h-full w-full animate-shimmer" />
-      </div>
-      <p className="text-sm text-muted-foreground">{t("searching")}</p>
-      <button onClick={onCancel} className="btn-pill btn-ghost-pill w-full">
-        {t("cancel")}
-      </button>
-    </div>
-  );
+function formatTime(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const same = d.toDateString() === now.toDateString();
+  return same
+    ? d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })
+    : d.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit" });
 }
