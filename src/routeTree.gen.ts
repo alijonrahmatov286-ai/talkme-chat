@@ -11,7 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoiceRouteImport } from './routes/voice'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as PeopleRouteImport } from './routes/people'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DmNicknameRouteImport } from './routes/dm.$nickname'
 import { Route as ChatRoomIdRouteImport } from './routes/chat.$roomId'
 
 const VoiceRoute = VoiceRouteImport.update({
@@ -24,9 +27,24 @@ const SettingsRoute = SettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PeopleRoute = PeopleRouteImport.update({
+  id: '/people',
+  path: '/people',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DmNicknameRoute = DmNicknameRouteImport.update({
+  id: '/dm/$nickname',
+  path: '/dm/$nickname',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoomIdRoute = ChatRoomIdRouteImport.update({
@@ -37,36 +55,70 @@ const ChatRoomIdRoute = ChatRoomIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/people': typeof PeopleRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
+  '/dm/$nickname': typeof DmNicknameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/people': typeof PeopleRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
+  '/dm/$nickname': typeof DmNicknameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/onboarding': typeof OnboardingRoute
+  '/people': typeof PeopleRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
+  '/dm/$nickname': typeof DmNicknameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/voice' | '/chat/$roomId'
+  fullPaths:
+    | '/'
+    | '/onboarding'
+    | '/people'
+    | '/settings'
+    | '/voice'
+    | '/chat/$roomId'
+    | '/dm/$nickname'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/voice' | '/chat/$roomId'
-  id: '__root__' | '/' | '/settings' | '/voice' | '/chat/$roomId'
+  to:
+    | '/'
+    | '/onboarding'
+    | '/people'
+    | '/settings'
+    | '/voice'
+    | '/chat/$roomId'
+    | '/dm/$nickname'
+  id:
+    | '__root__'
+    | '/'
+    | '/onboarding'
+    | '/people'
+    | '/settings'
+    | '/voice'
+    | '/chat/$roomId'
+    | '/dm/$nickname'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  OnboardingRoute: typeof OnboardingRoute
+  PeopleRoute: typeof PeopleRoute
   SettingsRoute: typeof SettingsRoute
   VoiceRoute: typeof VoiceRoute
   ChatRoomIdRoute: typeof ChatRoomIdRoute
+  DmNicknameRoute: typeof DmNicknameRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -85,11 +137,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/people': {
+      id: '/people'
+      path: '/people'
+      fullPath: '/people'
+      preLoaderRoute: typeof PeopleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dm/$nickname': {
+      id: '/dm/$nickname'
+      path: '/dm/$nickname'
+      fullPath: '/dm/$nickname'
+      preLoaderRoute: typeof DmNicknameRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat/$roomId': {
@@ -104,9 +177,12 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  OnboardingRoute: OnboardingRoute,
+  PeopleRoute: PeopleRoute,
   SettingsRoute: SettingsRoute,
   VoiceRoute: VoiceRoute,
   ChatRoomIdRoute: ChatRoomIdRoute,
+  DmNicknameRoute: DmNicknameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
