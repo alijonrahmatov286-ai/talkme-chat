@@ -1,7 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import type { Session } from "@supabase/supabase-js";
 import { translations, type Lang, type TKey } from "./i18n";
-import { supabase } from "@/integrations/supabase/client";
 
 export type Brand =
   | "white"
@@ -56,12 +54,14 @@ interface AppState {
   setVibration: (v: boolean) => void;
   t: (k: TKey) => string;
   userId: string;
-  session: Session | null;
-  authLoading: boolean;
-  signOut: () => Promise<void>;
 }
 
 const Ctx = createContext<AppState | null>(null);
+
+function uuid() {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return "u-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+}
 
 function readLS<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -81,8 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [sound, setSoundState] = useState<boolean>(true);
   const [vibration, setVibrationState] = useState<boolean>(true);
-  const [session, setSession] = useState<Session | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
@@ -91,16 +90,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
     setSoundState(readLS<boolean>("talkme_sound", true));
     setVibrationState(readLS<boolean>("talkme_vibration", true));
+    let uid = readLS<string>("talkme_uid", "");
+    if (!uid) {
+      uid = uuid();
+      localStorage.setItem("talkme_uid", JSON.stringify(uid));
+    }
+    setUserId(uid);
     setHydrated(true);
-
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setAuthLoading(false);
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-    });
-    return () => sub.subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
@@ -136,12 +132,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setVibrationState(v);
     localStorage.setItem("talkme_vibration", JSON.stringify(v));
   };
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-  };
-
-  const userId = session?.user?.id ?? "";
 
   const value = useMemo<AppState>(
     () => ({
@@ -159,12 +149,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       vibration,
       setVibration,
       userId,
-      session,
-      authLoading,
-      signOut,
       t: (k) => translations[lang]?.[k] ?? translations.en[k],
     }),
-    [lang, brand, theme, profile, sound, vibration, userId, session, authLoading],
+    [lang, brand, theme, profile, sound, vibration, userId],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
