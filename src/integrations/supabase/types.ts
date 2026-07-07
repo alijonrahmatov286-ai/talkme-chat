@@ -67,7 +67,10 @@ export type Database = {
           content: string
           conversation_id: string
           created_at: string
+          duration_ms: number | null
           id: string
+          kind: string
+          media_url: string | null
           read_at: string | null
           sender_id: string
         }
@@ -75,7 +78,10 @@ export type Database = {
           content: string
           conversation_id: string
           created_at?: string
+          duration_ms?: number | null
           id?: string
+          kind?: string
+          media_url?: string | null
           read_at?: string | null
           sender_id: string
         }
@@ -83,7 +89,10 @@ export type Database = {
           content?: string
           conversation_id?: string
           created_at?: string
+          duration_ms?: number | null
           id?: string
+          kind?: string
+          media_url?: string | null
           read_at?: string | null
           sender_id?: string
         }
@@ -172,9 +181,11 @@ export type Database = {
         Row: {
           age: number | null
           avatar_emoji: string
+          avatar_url: string | null
           bio: string | null
           created_at: string
           display_name: string | null
+          email: string | null
           gender: string | null
           last_seen: string
           nickname: string
@@ -183,9 +194,11 @@ export type Database = {
         Insert: {
           age?: number | null
           avatar_emoji?: string
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           gender?: string | null
           last_seen?: string
           nickname: string
@@ -194,9 +207,11 @@ export type Database = {
         Update: {
           age?: number | null
           avatar_emoji?: string
+          avatar_url?: string | null
           bio?: string | null
           created_at?: string
           display_name?: string | null
+          email?: string | null
           gender?: string | null
           last_seen?: string
           nickname?: string
@@ -325,6 +340,10 @@ export type Database = {
         Returns: string
       }
       find_room_for_user: { Args: { p_user_id: string }; Returns: string }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string; p_user_id: string }
+        Returns: undefined
+      }
       online_count: { Args: never; Returns: number }
       open_conversation: { Args: { p_a: string; p_b: string }; Returns: string }
     }
