@@ -6,9 +6,11 @@ export interface Profile {
   nickname: string;
   display_name: string | null;
   avatar_emoji: string;
+  avatar_url: string | null;
   bio: string | null;
   gender: string | null;
   age: number | null;
+  email: string | null;
   last_seen: string;
   created_at: string;
 }
@@ -18,23 +20,25 @@ export function useProfile(userId: string) {
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
     const { data } = await supabase
       .from("profiles")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
-    setProfile((data as Profile) ?? null);
+    setProfile((data as unknown as Profile) ?? null);
     setLoading(false);
   }, [userId]);
 
   useEffect(() => {
-    if (!userId) return;
     setLoading(true);
     refresh();
   }, [userId, refresh]);
 
-  // heartbeat last_seen
   useEffect(() => {
     if (!userId || !profile) return;
     const beat = () =>
@@ -42,6 +46,7 @@ export function useProfile(userId: string) {
     beat();
     const id = setInterval(beat, 20_000);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, profile?.user_id]);
 
   return { profile, loading, refresh, setProfile };
