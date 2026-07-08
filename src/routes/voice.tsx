@@ -360,7 +360,7 @@ function VoicePage() {
                 className={"btn-pill flex-1 " + (muted ? "btn-brand" : "btn-ghost-pill")}
               >
                 {muted ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                {muted ? t("unmute") ?? "Unmute" : t("mute") ?? "Mute"}
+                {muted ? "Unmute" : "Mute"}
               </button>
             )}
             <button onClick={cancel} className="btn-pill btn-ghost-pill flex-1">
