@@ -50,6 +50,7 @@ function ChatPage() {
       if (!cancelled && r) {
         setRoom(r as Room);
         if (!r.active) setPartnerLeft(true);
+        else feedback("match");
       }
       const { data: m } = await supabase
         .from("messages")
