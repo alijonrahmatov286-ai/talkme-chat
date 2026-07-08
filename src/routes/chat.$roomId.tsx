@@ -50,6 +50,7 @@ function ChatPage() {
       if (!cancelled && r) {
         setRoom(r as Room);
         if (!r.active) setPartnerLeft(true);
+        else feedback("match");
       }
       const { data: m } = await supabase
         .from("messages")
@@ -112,6 +113,7 @@ function ChatPage() {
   };
 
   const leave = async () => {
+    feedback("leave");
     await supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
     await supabase.from("waiting_queue").delete().eq("user_id", userId);
     navigate({ to: "/" });
@@ -186,10 +188,10 @@ function ChatPage() {
             >
               <div
                 className={
-                  "max-w-[78%] rounded-3xl px-4 py-2.5 text-sm leading-snug " +
+                  "max-w-[78%] rounded-full px-4 py-2.5 text-sm leading-snug " +
                   (mine
-                    ? "rounded-br-md bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_8px_24px_-12px_var(--brand-glow)]"
-                    : "rounded-bl-md bg-card text-foreground border border-border")
+                    ? "bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_8px_24px_-12px_var(--brand-glow)]"
+                    : "bg-card text-foreground border border-border")
                 }
               >
                 {m.content}
