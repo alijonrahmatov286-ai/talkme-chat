@@ -113,6 +113,7 @@ function ChatPage() {
   };
 
   const leave = async () => {
+    feedback("leave");
     await supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
     await supabase.from("waiting_queue").delete().eq("user_id", userId);
     navigate({ to: "/" });
