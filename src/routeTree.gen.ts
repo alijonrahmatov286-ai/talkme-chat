@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VoiceRouteImport } from './routes/voice'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatRoomIdRouteImport } from './routes/chat.$roomId'
 
@@ -22,6 +23,11 @@ const VoiceRoute = VoiceRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -37,12 +43,14 @@ const ChatRoomIdRoute = ChatRoomIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/settings': typeof SettingsRoute
   '/voice': typeof VoiceRoute
   '/chat/$roomId': typeof ChatRoomIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/settings' | '/voice' | '/chat/$roomId'
+  fullPaths: '/' | '/auth' | '/settings' | '/voice' | '/chat/$roomId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/settings' | '/voice' | '/chat/$roomId'
-  id: '__root__' | '/' | '/settings' | '/voice' | '/chat/$roomId'
+  to: '/' | '/auth' | '/settings' | '/voice' | '/chat/$roomId'
+  id: '__root__' | '/' | '/auth' | '/settings' | '/voice' | '/chat/$roomId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   SettingsRoute: typeof SettingsRoute
   VoiceRoute: typeof VoiceRoute
   ChatRoomIdRoute: typeof ChatRoomIdRoute
@@ -85,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   SettingsRoute: SettingsRoute,
   VoiceRoute: VoiceRoute,
   ChatRoomIdRoute: ChatRoomIdRoute,
