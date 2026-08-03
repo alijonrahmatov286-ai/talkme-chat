@@ -1,15 +1,32 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Send, LogOut, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
 import { useNetworkStatus } from "@/lib/use-network";
+import { AuthGate } from "@/components/auth-gate";
+import { ProfileCard, type CardProfile } from "@/components/profile-card";
+import { getProfilesByIds } from "@/lib/auth-phone.functions";
 
 export const Route = createFileRoute("/chat/$roomId")({
-  head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
-  component: ChatPage,
+  head: () => ({
+    meta: [
+      { title: "Chat — TalkMe" },
+      { name: "description", content: "Anonymous 1-on-1 chat on TalkMe." },
+      { property: "og:title", content: "Chat — TalkMe" },
+      { property: "og:description", content: "Anonymous 1-on-1 chat on TalkMe." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: () => (
+    <AuthGate>
+      <ChatPage />
+    </AuthGate>
+  ),
 });
+
 
 interface Message {
   id: string;
