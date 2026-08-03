@@ -47,6 +47,19 @@ function VoicePage() {
   const [muted, setMuted] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [partner, setPartner] = useState<CardProfile | null>(null);
+
+  const loadPartner = async (room: { user_a: string; user_b: string } | null) => {
+    if (!room) return;
+    const otherId = room.user_a === userId ? room.user_b : room.user_a;
+    try {
+      const res = await getProfilesByIds({ data: { userIds: [otherId] } });
+      setPartner(res.profiles[0] ?? null);
+    } catch {
+      setPartner(null);
+    }
+  };
+
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const chanRef = useRef<RealtimeChannel | null>(null);
