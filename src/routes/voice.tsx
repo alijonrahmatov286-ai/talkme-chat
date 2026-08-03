@@ -293,6 +293,8 @@ function VoicePage() {
             .eq("id", data)
             .maybeSingle();
           const isInitiator = room ? room.user_a === userId : false;
+          void loadPartner(room);
+
           try {
             await setupPeer(data, isInitiator);
           } catch (e) {
