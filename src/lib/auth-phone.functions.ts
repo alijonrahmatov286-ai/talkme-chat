@@ -107,15 +107,22 @@ export const saveMyProfile = createServerFn({ method: "POST" })
     const gender = data.gender === "female" ? "female" : "male";
     const age = Math.min(99, Math.max(18, Number(data.age) || 18));
 
-    const patch: Record<string, unknown> = {
+    const patch: {
+      display_name: string;
+      gender: string;
+      age: number;
+      last_seen: string;
+      avatar_url?: string;
+    } = {
       display_name: displayName,
       gender,
       age,
       last_seen: new Date().toISOString(),
     };
-    if (data.avatarDataUrl) patch["avatar_url"] = await helpers.uploadAvatar(userId, data.avatarDataUrl);
+    if (data.avatarDataUrl) patch.avatar_url = await helpers.uploadAvatar(userId, data.avatarDataUrl);
 
     const { error } = await supabaseAdmin.from("profiles").update(patch).eq("user_id", userId);
+
     if (error) throw new Error("SAVE_FAILED");
     return { profile: await helpers.loadProfile(userId) };
   });
