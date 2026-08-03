@@ -5,6 +5,9 @@ import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
 import { AuthGate } from "@/components/auth-gate";
+import { ProfileCard, type CardProfile } from "@/components/profile-card";
+import { getProfilesByIds } from "@/lib/auth-phone.functions";
+
 import { feedback } from "@/lib/feedback";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
