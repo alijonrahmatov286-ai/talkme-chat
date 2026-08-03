@@ -99,7 +99,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [sound, setSoundState] = useState<boolean>(true);
   const [vibration, setVibrationState] = useState<boolean>(true);
-  const [userId, setUserId] = useState<string>("");
+  const [token, setToken] = useState<string | null>(null);
+  const [me, setMeState] = useState<MeProfile | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
@@ -108,14 +110,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
     setSoundState(readLS<boolean>("talkme_sound", true));
     setVibrationState(readLS<boolean>("talkme_vibration", true));
-    let uid = readLS<string>("talkme_uid", "");
-    if (!uid) {
-      uid = uuid();
-      localStorage.setItem("talkme_uid", JSON.stringify(uid));
-    }
-    setUserId(uid);
     setHydrated(true);
+
+    const saved = readLS<string>("talkme_token", "");
+    if (!saved) {
+      setAuthReady(true);
+      return;
+    }
+    setToken(saved);
+    getMyProfile({ data: { token: saved } })
+      .then((res) => {
+        if (res.userId) setMeState(res.profile);
+        else {
+          setToken(null);
+          localStorage.removeItem("talkme_token");
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => setAuthReady(true));
   }, []);
+
 
   useEffect(() => {
     if (!hydrated) return;
