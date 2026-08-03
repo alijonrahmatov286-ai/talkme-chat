@@ -165,6 +165,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("talkme_vibration", JSON.stringify(v));
   };
 
+  const setMe = (m: MeProfile | null) => setMeState(m);
+  const signIn = (tk: string, m: MeProfile | null) => {
+    setToken(tk);
+    setMeState(m);
+    localStorage.setItem("talkme_token", JSON.stringify(tk));
+  };
+  const signOut = () => {
+    setToken(null);
+    setMeState(null);
+    localStorage.removeItem("talkme_token");
+  };
+  const refreshMe = async () => {
+    if (!token) return;
+    try {
+      const res = await getMyProfile({ data: { token } });
+      setMeState(res.profile);
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const userId = me?.userId ?? "";
+
   const value = useMemo<AppState>(
     () => ({
       lang,
@@ -181,10 +204,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       vibration,
       setVibration,
       userId,
+      token,
+      me,
+      authReady,
+      signIn,
+      signOut,
+      setMe,
+      refreshMe,
       t: (k) => translations[lang]?.[k] ?? translations.en[k],
     }),
-    [lang, brand, theme, profile, sound, vibration, userId],
+    [lang, brand, theme, profile, sound, vibration, userId, token, me, authReady],
   );
+
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
