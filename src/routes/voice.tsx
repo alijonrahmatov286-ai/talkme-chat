@@ -354,8 +354,15 @@ function VoicePage() {
         <div className="text-xs text-muted-foreground capitalize">{brand}</div>
       </section>
 
+      {busy && partner && (
+        <div className="mb-3">
+          <ProfileCard profile={partner} />
+        </div>
+      )}
+
       {busy ? (
         <div className="card-soft flex flex-col items-center gap-5 p-8 animate-fade-up">
+
           <div className="relative grid h-24 w-24 place-items-center">
             <div className="absolute inset-0 animate-float rounded-full bg-[var(--brand)]/20 blur-2xl" />
             <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_20px_50px_-10px_var(--brand-glow)]">
