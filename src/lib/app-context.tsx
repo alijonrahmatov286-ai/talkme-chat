@@ -64,7 +64,15 @@ interface AppState {
   setVibration: (v: boolean) => void;
   t: (k: TKey) => string;
   userId: string;
+  token: string | null;
+  me: MeProfile | null;
+  authReady: boolean;
+  signIn: (token: string, me: MeProfile | null) => void;
+  signOut: () => void;
+  setMe: (m: MeProfile | null) => void;
+  refreshMe: () => Promise<void>;
 }
+
 
 const Ctx = createContext<AppState | null>(null);
 
