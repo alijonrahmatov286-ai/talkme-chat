@@ -1,10 +1,11 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
+import { Settings as SettingsIcon, MessageCircle, Sparkles, User } from "lucide-react";
 import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
+import { AuthGate } from "@/components/auth-gate";
 import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/")({
@@ -14,10 +15,15 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Pick your gender, age and start chatting anonymously." },
     ],
   }),
-  component: Home,
+  component: () => (
+    <AuthGate>
+      <Home />
+    </AuthGate>
+  ),
 });
 
 function Home() {
+
   const { t, profile, setProfile, userId, brand } = useApp();
   const online = useOnlineCount(userId);
   const navigate = useNavigate();
