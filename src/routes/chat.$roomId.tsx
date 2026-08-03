@@ -181,7 +181,7 @@ function ChatPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex flex-col items-center">
-          <div className="text-sm font-semibold">{t("stranger")}</div>
+          <div className="text-sm font-semibold">{partner?.displayName ?? t("stranger")}</div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span
               className={
@@ -196,6 +196,13 @@ function ChatPage() {
           <LogOut className="h-5 w-5" />
         </button>
       </header>
+
+      {partner && (
+        <div className="mb-3">
+          <ProfileCard profile={partner} />
+        </div>
+      )}
+
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
         {loading && (
