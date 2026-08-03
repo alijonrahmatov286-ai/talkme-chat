@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      auth_phones: {
+        Row: {
+          created_at: string
+          phone: string
+          updated_at: string
+          user_id: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          phone: string
+          updated_at?: string
+          user_id: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          phone?: string
+          updated_at?: string
+          user_id?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
       chat_rooms: {
         Row: {
           active: boolean
@@ -162,6 +186,36 @@ export type Database = {
           },
         ]
       }
+      phone_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed: boolean
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed?: boolean
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed?: boolean
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+        }
+        Relationships: []
+      }
       presence: {
         Row: {
           last_seen: string
@@ -188,7 +242,8 @@ export type Database = {
           email: string | null
           gender: string | null
           last_seen: string
-          nickname: string
+          nickname: string | null
+          phone: string | null
           user_id: string
         }
         Insert: {
@@ -201,7 +256,8 @@ export type Database = {
           email?: string | null
           gender?: string | null
           last_seen?: string
-          nickname: string
+          nickname?: string | null
+          phone?: string | null
           user_id: string
         }
         Update: {
@@ -214,7 +270,8 @@ export type Database = {
           email?: string | null
           gender?: string | null
           last_seen?: string
-          nickname?: string
+          nickname?: string | null
+          phone?: string | null
           user_id?: string
         }
         Relationships: []
