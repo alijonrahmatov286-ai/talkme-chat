@@ -4,6 +4,10 @@ import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff } from
 import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
+import { AuthGate } from "@/components/auth-gate";
+import { ProfileCard, type CardProfile } from "@/components/profile-card";
+import { getProfilesByIds } from "@/lib/auth-phone.functions";
+
 import { feedback } from "@/lib/feedback";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -15,7 +19,12 @@ export const Route = createFileRoute("/voice")({
       { name: "description", content: "Anonymous voice calls with new people." },
     ],
   }),
-  component: VoicePage,
+  component: () => (
+    <AuthGate>
+      <VoicePage />
+    </AuthGate>
+  ),
+
 });
 
 type CallStatus = "idle" | "searching" | "connecting" | "in-call" | "ended";
@@ -41,6 +50,19 @@ function VoicePage() {
   const [muted, setMuted] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [partner, setPartner] = useState<CardProfile | null>(null);
+
+  const loadPartner = async (room: { user_a: string; user_b: string } | null) => {
+    if (!room) return;
+    const otherId = room.user_a === userId ? room.user_b : room.user_a;
+    try {
+      const res = await getProfilesByIds({ data: { userIds: [otherId] } });
+      setPartner(res.profiles[0] ?? null);
+    } catch {
+      setPartner(null);
+    }
+  };
+
 
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const chanRef = useRef<RealtimeChannel | null>(null);
@@ -239,6 +261,8 @@ function VoicePage() {
           .eq("id", roomId)
           .maybeSingle();
         const isInitiator = room ? room.user_a === userId : userId < "m";
+        void loadPartner(room);
+
         try {
           await setupPeer(roomId, isInitiator);
         } catch (e) {
@@ -269,6 +293,8 @@ function VoicePage() {
             .eq("id", data)
             .maybeSingle();
           const isInitiator = room ? room.user_a === userId : false;
+          void loadPartner(room);
+
           try {
             await setupPeer(data, isInitiator);
           } catch (e) {
@@ -328,8 +354,15 @@ function VoicePage() {
         <div className="text-xs text-muted-foreground capitalize">{brand}</div>
       </section>
 
+      {busy && partner && (
+        <div className="mb-3">
+          <ProfileCard profile={partner} />
+        </div>
+      )}
+
       {busy ? (
         <div className="card-soft flex flex-col items-center gap-5 p-8 animate-fade-up">
+
           <div className="relative grid h-24 w-24 place-items-center">
             <div className="absolute inset-0 animate-float rounded-full bg-[var(--brand)]/20 blur-2xl" />
             <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_20px_50px_-10px_var(--brand-glow)]">

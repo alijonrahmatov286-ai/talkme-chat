@@ -1,15 +1,32 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Send, LogOut, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
 import { useNetworkStatus } from "@/lib/use-network";
+import { AuthGate } from "@/components/auth-gate";
+import { ProfileCard, type CardProfile } from "@/components/profile-card";
+import { getProfilesByIds } from "@/lib/auth-phone.functions";
 
 export const Route = createFileRoute("/chat/$roomId")({
-  head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
-  component: ChatPage,
+  head: () => ({
+    meta: [
+      { title: "Chat — TalkMe" },
+      { name: "description", content: "Anonymous 1-on-1 chat on TalkMe." },
+      { property: "og:title", content: "Chat — TalkMe" },
+      { property: "og:description", content: "Anonymous 1-on-1 chat on TalkMe." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+  component: () => (
+    <AuthGate>
+      <ChatPage />
+    </AuthGate>
+  ),
 });
+
 
 interface Message {
   id: string;
@@ -35,6 +52,7 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [partner, setPartner] = useState<CardProfile | null>(null);
   const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +69,15 @@ function ChatPage() {
         setRoom(r as Room);
         if (!r.active) setPartnerLeft(true);
         else feedback("match");
+        const otherId = r.user_a === userId ? r.user_b : r.user_a;
+        try {
+          const res = await getProfilesByIds({ data: { userIds: [otherId] } });
+          if (!cancelled) setPartner(res.profiles[0] ?? null);
+        } catch {
+          /* ignore */
+        }
       }
+
       const { data: m } = await supabase
         .from("messages")
         .select("*")
@@ -155,7 +181,7 @@ function ChatPage() {
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex flex-col items-center">
-          <div className="text-sm font-semibold">{t("stranger")}</div>
+          <div className="text-sm font-semibold">{partner?.displayName ?? t("stranger")}</div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span
               className={
@@ -170,6 +196,13 @@ function ChatPage() {
           <LogOut className="h-5 w-5" />
         </button>
       </header>
+
+      {partner && (
+        <div className="mb-3">
+          <ProfileCard profile={partner} />
+        </div>
+      )}
+
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
         {loading && (
