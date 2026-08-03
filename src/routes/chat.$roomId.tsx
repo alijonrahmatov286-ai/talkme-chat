@@ -52,6 +52,7 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [partner, setPartner] = useState<CardProfile | null>(null);
   const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +69,15 @@ function ChatPage() {
         setRoom(r as Room);
         if (!r.active) setPartnerLeft(true);
         else feedback("match");
+        const otherId = r.user_a === userId ? r.user_b : r.user_a;
+        try {
+          const res = await getProfilesByIds({ data: { userIds: [otherId] } });
+          if (!cancelled) setPartner(res.profiles[0] ?? null);
+        } catch {
+          /* ignore */
+        }
       }
+
       const { data: m } = await supabase
         .from("messages")
         .select("*")
