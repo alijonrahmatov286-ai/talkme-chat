@@ -109,9 +109,21 @@ function Home() {
           </div>
           <span className="text-xl font-bold tracking-tight">TalkMe</span>
         </div>
-        <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
-          <SettingsIcon className="h-5 w-5" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link to="/profile" className="btn-pill btn-ghost-pill !p-1.5" aria-label={t("profile")}>
+            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-[var(--brand)]/20">
+              {me?.avatarUrl ? (
+                <img src={me.avatarUrl} alt={me.displayName} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-4 w-4" />
+              )}
+            </span>
+          </Link>
+          <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
+            <SettingsIcon className="h-5 w-5" />
+          </Link>
+        </div>
+
       </header>
 
       <section className="card-soft mb-6 flex items-center justify-between gap-3 px-5 py-4 animate-fade-up">
