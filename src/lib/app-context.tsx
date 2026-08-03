@@ -1,5 +1,15 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { translations, type Lang, type TKey } from "./i18n";
+import { getMyProfile } from "./auth-phone.functions";
+
+export interface MeProfile {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+  gender: string | null;
+  age: number | null;
+}
+
 
 export type Brand =
   | "white"
