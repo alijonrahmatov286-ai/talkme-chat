@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
 
-  const { t, profile, setProfile, userId, brand } = useApp();
+  const { t, profile, setProfile, userId, brand, me } = useApp();
   const online = useOnlineCount(userId);
   const navigate = useNavigate();
   const [searching, setSearching] = useState(false);
