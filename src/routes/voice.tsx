@@ -4,6 +4,7 @@ import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff } from
 import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
+import { AuthGate } from "@/components/auth-gate";
 import { feedback } from "@/lib/feedback";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealtimeChannel } from "@supabase/supabase-js";
@@ -15,7 +16,12 @@ export const Route = createFileRoute("/voice")({
       { name: "description", content: "Anonymous voice calls with new people." },
     ],
   }),
-  component: VoicePage,
+  component: () => (
+    <AuthGate>
+      <VoicePage />
+    </AuthGate>
+  ),
+
 });
 
 type CallStatus = "idle" | "searching" | "connecting" | "in-call" | "ended";
