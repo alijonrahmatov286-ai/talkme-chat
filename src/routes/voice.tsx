@@ -220,7 +220,7 @@ function VoicePage() {
       });
       if (error) {
         console.error(error);
-        setErrorMsg(error.message);
+        setErrorMsg(error.message.includes("USER_BANNED") ? t("banned24") : error.message);
         setStatus("idle");
         return true;
       }

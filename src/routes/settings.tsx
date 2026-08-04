@@ -1,9 +1,16 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown } from "lucide-react";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck } from "lucide-react";
 import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
 import { LANGUAGES, type Lang } from "@/lib/i18n";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({
@@ -206,6 +213,41 @@ function SettingsPage() {
             </span>
             {vibration && <Check className="h-5 w-5" />}
           </button>
+        </div>
+      </section>
+
+      {/* Legal */}
+      <section className="card-soft mt-4 p-5 animate-fade-up">
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          {t("legal")}
+        </h2>
+        <div className="space-y-2">
+          {([
+            ["rules", t("rules"), t("rulesBody"), ScrollText],
+            ["privacy", t("privacy"), t("privacyBody"), ShieldCheck],
+          ] as const).map(([key, title, body, Icon]) => (
+            <Dialog key={key}>
+              <DialogTrigger asChild>
+                <button className="btn-pill btn-ghost-pill w-full justify-between !rounded-2xl !px-4 !py-3">
+                  <span className="flex items-center gap-3">
+                    <Icon className="h-5 w-5" />
+                    <span className="text-sm font-medium">{title}</span>
+                  </span>
+                  <ChevronRight className="h-5 w-5 opacity-70" />
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm rounded-3xl">
+                <DialogHeader>
+                  <DialogTitle>{title}</DialogTitle>
+                </DialogHeader>
+                <div className="max-h-[60vh] space-y-2 overflow-y-auto pr-1 text-sm leading-relaxed text-muted-foreground">
+                  {body.split("\n").map((line, i) => (
+                    <p key={i}>{line}</p>
+                  ))}
+                </div>
+              </DialogContent>
+            </Dialog>
+          ))}
         </div>
       </section>
     </main>

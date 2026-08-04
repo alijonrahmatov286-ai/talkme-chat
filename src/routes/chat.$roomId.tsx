@@ -1,15 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Send, Flag, Wifi, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
 import { useNetworkStatus } from "@/lib/use-network";
+import { reportChat } from "@/lib/moderation.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
   component: ChatPage,
 });
+
 
 interface Message {
   id: string;
@@ -35,6 +44,10 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const [reportResult, setReportResult] = useState<string | null>(null);
   const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -119,6 +132,27 @@ function ChatPage() {
     navigate({ to: "/" });
   };
 
+  const submitReport = async () => {
+    if (reporting) return;
+    setReporting(true);
+    try {
+      const res = await reportChat({
+        data: { roomId, reporterId: userId, reason: reportReason.trim() || undefined },
+      });
+      if (!res.ok) {
+        setReportResult(t("reportError"));
+      } else {
+        setReportResult(res.violation ? t("reportBanned") : t("reportClean"));
+        if (res.violation) setPartnerLeft(true);
+      }
+    } catch {
+      setReportResult(t("reportError"));
+    } finally {
+      setReporting(false);
+      setReportReason("");
+    }
+  };
+
   const showNetworkBar = network === "offline" || network === "connecting";
 
   return (
@@ -166,10 +200,55 @@ function ChatPage() {
             {partnerLeft ? t("partnerLeft") : t("connected")}
           </div>
         </div>
-        <button onClick={leave} className="btn-pill btn-ghost-pill !p-2.5" aria-label={t("leave")}>
-          <LogOut className="h-5 w-5" />
+        <button
+          onClick={() => {
+            setReportResult(null);
+            setReportOpen(true);
+          }}
+          className="btn-pill btn-ghost-pill !p-2.5"
+          aria-label={t("report")}
+        >
+          <Flag className="h-5 w-5" />
         </button>
       </header>
+
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent className="max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("reportTitle")}</DialogTitle>
+            <DialogDescription>{t("reportHint")}</DialogDescription>
+          </DialogHeader>
+          {reportResult ? (
+            <p className="text-sm">{reportResult}</p>
+          ) : (
+            <>
+              <textarea
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                maxLength={500}
+                rows={3}
+                placeholder={t("reportReasonPlaceholder")}
+                className="w-full resize-none rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
+              />
+              <button
+                onClick={submitReport}
+                disabled={reporting}
+                className="btn-pill btn-brand w-full !rounded-2xl !py-3"
+              >
+                {reporting ? (
+                  <>
+                    <div className="ios-spinner" />
+                    {t("reportChecking")}
+                  </>
+                ) : (
+                  t("reportSend")
+                )}
+              </button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
         {loading && (

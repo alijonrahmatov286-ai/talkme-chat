@@ -93,6 +93,25 @@ const en = {
   light: "Light",
   chooseLanguage: "Choose language",
   chooseColor: "Choose color",
+  report: "Report",
+  reportTitle: "Report this chat",
+  reportHint:
+    "The conversation will be reviewed automatically by AI. If profanity, racism or other rule violations are found, the user will be blocked for 24 hours.",
+  reportReasonPlaceholder: "What happened? (optional)",
+  reportSend: "Send report",
+  reportChecking: "Checking the chat…",
+  reportBanned: "Violation found. The user is blocked for 24 hours.",
+  reportClean: "No violations found. Thanks for the report.",
+  reportError: "Could not send the report. Try again.",
+  banned24: "You are blocked for 24 hours for violating the rules.",
+  legal: "Legal",
+  rules: "Community rules",
+  privacy: "Privacy policy",
+  rulesBody:
+    "1. Be respectful. Insults, profanity, racism and any hate speech are forbidden.\n2. No harassment, threats or violence.\n3. No sexual content, especially involving minors. 18+ only.\n4. No spam, scam, ads or links to illegal content.\n5. Do not share personal data — yours or someone else's.\n6. Every chat can be reported. Reports are reviewed automatically by AI; violations lead to a 24-hour block.",
+  privacyBody:
+    "• The app is anonymous: we do not ask for your name, email or phone.\n• You get a random ID stored on your device only.\n• Gender and age are used only to match you with a partner.\n• Chat messages are stored to keep the conversation working and to review reports.\n• When you report a chat, its text is sent to an automated moderation service.\n• Language, colour, theme, sound and vibration settings are stored on your device.\n• We do not sell your data and do not show ads.",
+  close: "Close",
 } as const;
 
 const ru: Record<keyof typeof en, string> = {
@@ -145,6 +164,25 @@ const ru: Record<keyof typeof en, string> = {
   light: "Светлая",
   chooseLanguage: "Выберите язык",
   chooseColor: "Выберите цвет",
+  report: "Пожаловаться",
+  reportTitle: "Жалоба на чат",
+  reportHint:
+    "Переписка будет автоматически проверена ИИ. Если найдены мат, расизм или другие нарушения правил, пользователь будет заблокирован на 24 часа.",
+  reportReasonPlaceholder: "Что произошло? (необязательно)",
+  reportSend: "Отправить жалобу",
+  reportChecking: "Проверяем чат…",
+  reportBanned: "Нарушение подтверждено. Пользователь заблокирован на 24 часа.",
+  reportClean: "Нарушений не найдено. Спасибо за жалобу.",
+  reportError: "Не удалось отправить жалобу. Попробуйте ещё раз.",
+  banned24: "Вы заблокированы на 24 часа за нарушение правил.",
+  legal: "Правовая информация",
+  rules: "Правила сообщества",
+  privacy: "Конфиденциальность",
+  rulesBody:
+    "1. Уважайте собеседника. Оскорбления, мат, расизм и любая вражда запрещены.\n2. Запрещены угрозы, травля и насилие.\n3. Запрещён сексуальный контент, особенно с участием несовершеннолетних. Только 18+.\n4. Запрещены спам, мошенничество, реклама и ссылки на незаконный контент.\n5. Не публикуйте личные данные — свои и чужие.\n6. На каждый чат можно пожаловаться. Жалобы проверяет ИИ; за нарушение — блокировка на 24 часа.",
+  privacyBody:
+    "• Приложение анонимное: мы не спрашиваем имя, почту и телефон.\n• Вам выдаётся случайный ID, который хранится только на вашем устройстве.\n• Пол и возраст используются только для подбора собеседника.\n• Сообщения чата сохраняются, чтобы работала переписка и можно было проверить жалобу.\n• При жалобе текст чата отправляется в автоматическую систему модерации.\n• Язык, цвет, тема, звук и вибрация хранятся на вашем устройстве.\n• Мы не продаём ваши данные и не показываем рекламу.",
+  close: "Закрыть",
 };
 
 type TranslationDict = Record<keyof typeof en, string>;
