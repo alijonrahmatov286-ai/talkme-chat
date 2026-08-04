@@ -175,10 +175,55 @@ function ChatPage() {
             {partnerLeft ? t("partnerLeft") : t("connected")}
           </div>
         </div>
-        <button onClick={leave} className="btn-pill btn-ghost-pill !p-2.5" aria-label={t("leave")}>
-          <LogOut className="h-5 w-5" />
+        <button
+          onClick={() => {
+            setReportResult(null);
+            setReportOpen(true);
+          }}
+          className="btn-pill btn-ghost-pill !p-2.5"
+          aria-label={t("report")}
+        >
+          <Flag className="h-5 w-5" />
         </button>
       </header>
+
+      <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+        <DialogContent className="max-w-sm rounded-3xl">
+          <DialogHeader>
+            <DialogTitle>{t("reportTitle")}</DialogTitle>
+            <DialogDescription>{t("reportHint")}</DialogDescription>
+          </DialogHeader>
+          {reportResult ? (
+            <p className="text-sm">{reportResult}</p>
+          ) : (
+            <>
+              <textarea
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                maxLength={500}
+                rows={3}
+                placeholder={t("reportReasonPlaceholder")}
+                className="w-full resize-none rounded-2xl border border-border bg-transparent px-4 py-3 text-sm outline-none placeholder:text-muted-foreground"
+              />
+              <button
+                onClick={submitReport}
+                disabled={reporting}
+                className="btn-pill btn-brand w-full !rounded-2xl !py-3"
+              >
+                {reporting ? (
+                  <>
+                    <div className="ios-spinner" />
+                    {t("reportChecking")}
+                  </>
+                ) : (
+                  t("reportSend")
+                )}
+              </button>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
         {loading && (
