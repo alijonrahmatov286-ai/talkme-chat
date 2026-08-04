@@ -1,11 +1,10 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Settings as SettingsIcon, MessageCircle, Sparkles, User } from "lucide-react";
+import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
 import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/bottom-nav";
-import { AuthGate } from "@/components/auth-gate";
 import { feedback } from "@/lib/feedback";
 
 export const Route = createFileRoute("/")({
@@ -15,16 +14,11 @@ export const Route = createFileRoute("/")({
       { name: "description", content: "Pick your gender, age and start chatting anonymously." },
     ],
   }),
-  component: () => (
-    <AuthGate>
-      <Home />
-    </AuthGate>
-  ),
+  component: Home,
 });
 
 function Home() {
-
-  const { t, profile, setProfile, userId, brand, me } = useApp();
+  const { t, profile, setProfile, userId, brand } = useApp();
   const online = useOnlineCount(userId);
   const navigate = useNavigate();
   const [searching, setSearching] = useState(false);
@@ -109,21 +103,9 @@ function Home() {
           </div>
           <span className="text-xl font-bold tracking-tight">TalkMe</span>
         </div>
-        <div className="flex items-center gap-2">
-          <Link to="/profile" className="btn-pill btn-ghost-pill !p-1.5" aria-label={t("profile")}>
-            <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-full bg-[var(--brand)]/20">
-              {me?.avatarUrl ? (
-                <img src={me.avatarUrl} alt={me.displayName} className="h-full w-full object-cover" />
-              ) : (
-                <User className="h-4 w-4" />
-              )}
-            </span>
-          </Link>
-          <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
-            <SettingsIcon className="h-5 w-5" />
-          </Link>
-        </div>
-
+        <Link to="/settings" className="btn-pill btn-ghost-pill !p-3" aria-label={t("settings")}>
+          <SettingsIcon className="h-5 w-5" />
+        </Link>
       </header>
 
       <section className="card-soft mb-6 flex items-center justify-between gap-3 px-5 py-4 animate-fade-up">

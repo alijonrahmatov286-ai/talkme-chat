@@ -1,15 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { translations, type Lang, type TKey } from "./i18n";
-import { getMyProfile } from "./auth-phone.functions";
-
-export interface MeProfile {
-  userId: string;
-  displayName: string;
-  avatarUrl: string | null;
-  gender: string | null;
-  age: number | null;
-}
-
 
 export type Brand =
   | "white"
@@ -64,15 +54,7 @@ interface AppState {
   setVibration: (v: boolean) => void;
   t: (k: TKey) => string;
   userId: string;
-  token: string | null;
-  me: MeProfile | null;
-  authReady: boolean;
-  signIn: (token: string, me: MeProfile | null) => void;
-  signOut: () => void;
-  setMe: (m: MeProfile | null) => void;
-  refreshMe: () => Promise<void>;
 }
-
 
 const Ctx = createContext<AppState | null>(null);
 
@@ -99,9 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [profile, setProfileState] = useState<UserProfile | null>(null);
   const [sound, setSoundState] = useState<boolean>(true);
   const [vibration, setVibrationState] = useState<boolean>(true);
-  const [token, setToken] = useState<string | null>(null);
-  const [me, setMeState] = useState<MeProfile | null>(null);
-  const [authReady, setAuthReady] = useState(false);
+  const [userId, setUserId] = useState<string>("");
 
   useEffect(() => {
     setLangState(readLS<Lang>("talkme_lang", "ru"));
@@ -110,26 +90,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setProfileState(readLS<UserProfile | null>("talkme_profile", null));
     setSoundState(readLS<boolean>("talkme_sound", true));
     setVibrationState(readLS<boolean>("talkme_vibration", true));
-    setHydrated(true);
-
-    const saved = readLS<string>("talkme_token", "");
-    if (!saved) {
-      setAuthReady(true);
-      return;
+    let uid = readLS<string>("talkme_uid", "");
+    if (!uid) {
+      uid = uuid();
+      localStorage.setItem("talkme_uid", JSON.stringify(uid));
     }
-    setToken(saved);
-    getMyProfile({ data: { token: saved } })
-      .then((res) => {
-        if (res.userId) setMeState(res.profile);
-        else {
-          setToken(null);
-          localStorage.removeItem("talkme_token");
-        }
-      })
-      .catch(() => undefined)
-      .finally(() => setAuthReady(true));
+    setUserId(uid);
+    setHydrated(true);
   }, []);
-
 
   useEffect(() => {
     if (!hydrated) return;
@@ -165,29 +133,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem("talkme_vibration", JSON.stringify(v));
   };
 
-  const setMe = (m: MeProfile | null) => setMeState(m);
-  const signIn = (tk: string, m: MeProfile | null) => {
-    setToken(tk);
-    setMeState(m);
-    localStorage.setItem("talkme_token", JSON.stringify(tk));
-  };
-  const signOut = () => {
-    setToken(null);
-    setMeState(null);
-    localStorage.removeItem("talkme_token");
-  };
-  const refreshMe = async () => {
-    if (!token) return;
-    try {
-      const res = await getMyProfile({ data: { token } });
-      setMeState(res.profile);
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const userId = me?.userId ?? "";
-
   const value = useMemo<AppState>(
     () => ({
       lang,
@@ -204,18 +149,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       vibration,
       setVibration,
       userId,
-      token,
-      me,
-      authReady,
-      signIn,
-      signOut,
-      setMe,
-      refreshMe,
       t: (k) => translations[lang]?.[k] ?? translations.en[k],
     }),
-    [lang, brand, theme, profile, sound, vibration, userId, token, me, authReady],
+    [lang, brand, theme, profile, sound, vibration, userId],
   );
-
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
