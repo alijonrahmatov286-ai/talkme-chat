@@ -32,6 +32,7 @@ function Home() {
     profile?.wantAgeMin ?? 18,
     profile?.wantAgeMax ?? 20,
   ]);
+  const [banned, setBanned] = useState(false);
 
   const draft: UserProfile = useMemo(
     () => ({
