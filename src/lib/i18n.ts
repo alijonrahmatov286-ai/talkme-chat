@@ -93,6 +93,25 @@ const en = {
   light: "Light",
   chooseLanguage: "Choose language",
   chooseColor: "Choose color",
+  report: "Report",
+  reportTitle: "Report this chat",
+  reportHint:
+    "The conversation will be reviewed automatically by AI. If profanity, racism or other rule violations are found, the user will be blocked for 24 hours.",
+  reportReasonPlaceholder: "What happened? (optional)",
+  reportSend: "Send report",
+  reportChecking: "Checking the chat…",
+  reportBanned: "Violation found. The user is blocked for 24 hours.",
+  reportClean: "No violations found. Thanks for the report.",
+  reportError: "Could not send the report. Try again.",
+  banned24: "You are blocked for 24 hours for violating the rules.",
+  legal: "Legal",
+  rules: "Community rules",
+  privacy: "Privacy policy",
+  rulesBody:
+    "1. Be respectful. Insults, profanity, racism and any hate speech are forbidden.\n2. No harassment, threats or violence.\n3. No sexual content, especially involving minors. 18+ only.\n4. No spam, scam, ads or links to illegal content.\n5. Do not share personal data — yours or someone else's.\n6. Every chat can be reported. Reports are reviewed automatically by AI; violations lead to a 24-hour block.",
+  privacyBody:
+    "• The app is anonymous: we do not ask for your name, email or phone.\n• You get a random ID stored on your device only.\n• Gender and age are used only to match you with a partner.\n• Chat messages are stored to keep the conversation working and to review reports.\n• When you report a chat, its text is sent to an automated moderation service.\n• Language, colour, theme, sound and vibration settings are stored on your device.\n• We do not sell your data and do not show ads.",
+  close: "Close",
 } as const;
 
 const ru: Record<keyof typeof en, string> = {
