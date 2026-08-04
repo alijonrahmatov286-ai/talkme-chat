@@ -302,6 +302,30 @@ export type Database = {
           },
         ]
       }
+      user_bans: {
+        Row: {
+          banned_until: string
+          created_at: string
+          id: string
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          banned_until: string
+          created_at?: string
+          id?: string
+          reason: string
+          user_id: string
+        }
+        Update: {
+          banned_until?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_blocks: {
         Row: {
           blocked_id: string
@@ -397,6 +421,7 @@ export type Database = {
         Returns: string
       }
       find_room_for_user: { Args: { p_user_id: string }; Returns: string }
+      is_user_banned: { Args: { p_user_id: string }; Returns: string }
       mark_conversation_read: {
         Args: { p_conversation_id: string; p_user_id: string }
         Returns: undefined
