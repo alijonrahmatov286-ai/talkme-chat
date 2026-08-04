@@ -132,6 +132,27 @@ function ChatPage() {
     navigate({ to: "/" });
   };
 
+  const submitReport = async () => {
+    if (reporting) return;
+    setReporting(true);
+    try {
+      const res = await reportChat({
+        data: { roomId, reporterId: userId, reason: reportReason.trim() || undefined },
+      });
+      if (!res.ok) {
+        setReportResult(t("reportError"));
+      } else {
+        setReportResult(res.violation ? t("reportBanned") : t("reportClean"));
+        if (res.violation) setPartnerLeft(true);
+      }
+    } catch {
+      setReportResult(t("reportError"));
+    } finally {
+      setReporting(false);
+      setReportReason("");
+    }
+  };
+
   const showNetworkBar = network === "offline" || network === "connecting";
 
   return (
