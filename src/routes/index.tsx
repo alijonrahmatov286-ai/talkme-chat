@@ -80,9 +80,11 @@ function Home() {
     });
     if (error) {
       console.error(error);
+      setBanned(error.message.includes("USER_BANNED"));
       setSearching(false);
       return;
     }
+    setBanned(false);
     if (typeof data === "string" && data) {
       setSearching(false);
       feedback("match");
