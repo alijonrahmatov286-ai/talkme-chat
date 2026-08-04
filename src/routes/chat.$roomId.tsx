@@ -44,6 +44,10 @@ function ChatPage() {
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reporting, setReporting] = useState(false);
+  const [reportResult, setReportResult] = useState<string | null>(null);
   const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
 
