@@ -1,15 +1,24 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, LogOut, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Send, Flag, Wifi, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
 import { useNetworkStatus } from "@/lib/use-network";
+import { reportChat } from "@/lib/moderation.functions";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const Route = createFileRoute("/chat/$roomId")({
   head: () => ({ meta: [{ title: "Chat — TalkMe" }] }),
   component: ChatPage,
 });
+
 
 interface Message {
   id: string;
