@@ -99,6 +99,11 @@ function Home() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-28 pt-8">
+      {banned && (
+        <div className="card-soft mb-4 border border-destructive/40 px-4 py-3 text-sm text-destructive animate-fade-up">
+          {t("banned24")}
+        </div>
+      )}
       <header className="mb-6 flex items-center justify-between animate-fade-up">
         <div className="flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_10px_30px_-10px_var(--brand-glow)]">
