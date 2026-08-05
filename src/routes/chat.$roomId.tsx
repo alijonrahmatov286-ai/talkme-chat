@@ -252,7 +252,7 @@ function ChatPage() {
                 (partnerLeft ? "bg-destructive" : "bg-[oklch(0.78_0.18_145)]")
               }
             />
-            {partnerLeft ? t("partnerLeft") : t("connected")}
+            {partnerLeft ? (partnerOffline ? t("partnerOffline") : t("partnerLeft")) : t("connected")}
           </div>
         </div>
         <button
