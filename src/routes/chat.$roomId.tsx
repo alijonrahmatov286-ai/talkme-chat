@@ -208,7 +208,7 @@ function ChatPage() {
           className="btn-pill btn-ghost-pill !p-2.5"
           aria-label={t("report")}
         >
-          <Flag className="h-5 w-5" />
+          <AlertTriangle className="h-5 w-5" />
         </button>
       </header>
 
