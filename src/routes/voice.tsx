@@ -130,15 +130,30 @@ function VoicePage() {
       }
     };
 
+    let dropTimer: ReturnType<typeof setTimeout> | null = null;
     pc.onconnectionstatechange = () => {
       const st = pc.connectionState;
       if (st === "connected") {
+        if (dropTimer) {
+          clearTimeout(dropTimer);
+          dropTimer = null;
+        }
         setStatus("in-call");
         feedback("match");
         if (!timerRef.current) {
           timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
         }
-      } else if (st === "failed" || st === "disconnected" || st === "closed") {
+      } else if (st === "disconnected") {
+        // short grace period — the connection often recovers on mobile networks
+        if (!dropTimer) {
+          dropTimer = setTimeout(() => {
+            if (pcRef.current?.connectionState !== "connected") {
+              void cleanup(true);
+              setStatus("ended");
+            }
+          }, 5000);
+        }
+      } else if (st === "failed" || st === "closed") {
         void cleanup(true);
         setStatus("ended");
       }
