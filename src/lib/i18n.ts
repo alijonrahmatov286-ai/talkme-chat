@@ -104,6 +104,8 @@ const en = {
   reportClean: "No violations found. Thanks for the report.",
   reportError: "Could not send the report. Try again.",
   banned24: "You are blocked for 24 hours for violating the rules.",
+  partnerOffline: "Your partner closed the app and left the conversation.",
+  reportBannedLimit: "This user reached 3 reports today and is blocked for 24 hours.",
   legal: "Legal",
   rules: "Community rules",
   privacy: "Privacy policy",
