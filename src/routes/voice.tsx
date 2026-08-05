@@ -103,8 +103,20 @@ function VoicePage() {
   }, []);
 
   const setupPeer = async (roomId: string, isInitiator: boolean) => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceCandidatePoolSize: 4 });
     pcRef.current = pc;
+    const pendingIce: RTCIceCandidateInit[] = [];
+    const flushIce = async () => {
+      while (pendingIce.length && pcRef.current?.remoteDescription) {
+        const c = pendingIce.shift()!;
+        try {
+          await pcRef.current.addIceCandidate(new RTCIceCandidate(c));
+        } catch (e) {
+          console.warn("ice add failed", e);
+        }
+      }
+    };
+
 
     // Local mic
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
