@@ -103,8 +103,20 @@ function VoicePage() {
   }, []);
 
   const setupPeer = async (roomId: string, isInitiator: boolean) => {
-    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+    const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS, iceCandidatePoolSize: 4 });
     pcRef.current = pc;
+    const pendingIce: RTCIceCandidateInit[] = [];
+    const flushIce = async () => {
+      while (pendingIce.length && pcRef.current?.remoteDescription) {
+        const c = pendingIce.shift()!;
+        try {
+          await pcRef.current.addIceCandidate(new RTCIceCandidate(c));
+        } catch (e) {
+          console.warn("ice add failed", e);
+        }
+      }
+    };
+
 
     // Local mic
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -118,15 +130,30 @@ function VoicePage() {
       }
     };
 
+    let dropTimer: ReturnType<typeof setTimeout> | null = null;
     pc.onconnectionstatechange = () => {
       const st = pc.connectionState;
       if (st === "connected") {
+        if (dropTimer) {
+          clearTimeout(dropTimer);
+          dropTimer = null;
+        }
         setStatus("in-call");
         feedback("match");
         if (!timerRef.current) {
           timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
         }
-      } else if (st === "failed" || st === "disconnected" || st === "closed") {
+      } else if (st === "disconnected") {
+        // short grace period — the connection often recovers on mobile networks
+        if (!dropTimer) {
+          dropTimer = setTimeout(() => {
+            if (pcRef.current?.connectionState !== "connected") {
+              void cleanup(true);
+              setStatus("ended");
+            }
+          }, 5000);
+        }
+      } else if (st === "failed" || st === "closed") {
         void cleanup(true);
         setStatus("ended");
       }
@@ -149,7 +176,9 @@ function VoicePage() {
 
     chan.on("broadcast", { event: "offer" }, async ({ payload }) => {
       if (isInitiator || !pcRef.current) return;
+      if (pcRef.current.currentRemoteDescription) return;
       await pcRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      await flushIce();
       const answer = await pcRef.current.createAnswer();
       await pcRef.current.setLocalDescription(answer);
       await chan.send({ type: "broadcast", event: "answer", payload: { from: userId, sdp: answer } });
@@ -159,10 +188,15 @@ function VoicePage() {
       if (!isInitiator || !pcRef.current) return;
       if (pcRef.current.currentRemoteDescription) return;
       await pcRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      await flushIce();
     });
 
     chan.on("broadcast", { event: "ice" }, async ({ payload }) => {
       if (!pcRef.current || payload.from === userId) return;
+      if (!pcRef.current.remoteDescription) {
+        pendingIce.push(payload.candidate);
+        return;
+      }
       try {
         await pcRef.current.addIceCandidate(new RTCIceCandidate(payload.candidate));
       } catch (e) {
@@ -278,7 +312,7 @@ function VoicePage() {
             setStatus("idle");
           }
         }
-      }, 1500);
+      }, 800);
     }
   };
 

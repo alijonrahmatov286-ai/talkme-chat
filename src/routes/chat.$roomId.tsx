@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Flag, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Send, AlertTriangle, WifiOff } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
@@ -43,6 +43,7 @@ function ChatPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
+  const [partnerOffline, setPartnerOffline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
@@ -109,6 +110,53 @@ function ChatPage() {
     };
   }, [roomId, userId]);
 
+  // heartbeat + detect partner closing the app
+  useEffect(() => {
+    if (!room || !userId || partnerLeft) return;
+    const partnerId = room.user_a === userId ? room.user_b : room.user_a;
+    let cancelled = false;
+    let misses = 0;
+
+    const beat = async () => {
+      await supabase
+        .from("presence")
+        .upsert({ user_id: userId, last_seen: new Date().toISOString() }, { onConflict: "user_id" });
+      const { data } = await supabase
+        .from("presence")
+        .select("last_seen")
+        .eq("user_id", partnerId)
+        .maybeSingle();
+      if (cancelled) return;
+      const stale =
+        !data || Date.now() - new Date(data.last_seen).getTime() > 20_000;
+      misses = stale ? misses + 1 : 0;
+      if (misses >= 2) {
+        setPartnerOffline(true);
+        setPartnerLeft(true);
+        feedback("leave");
+        void supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
+      }
+    };
+
+    void beat();
+    const id = setInterval(beat, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [room, userId, roomId, partnerLeft]);
+
+  // tell the partner immediately when this tab closes
+  useEffect(() => {
+    const onHide = () => {
+      void supabase.from("presence").delete().eq("user_id", userId);
+      void supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [roomId, userId]);
+
+
   // auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -142,8 +190,15 @@ function ChatPage() {
       if (!res.ok) {
         setReportResult(t("reportError"));
       } else {
-        setReportResult(res.violation ? t("reportBanned") : t("reportClean"));
-        if (res.violation) setPartnerLeft(true);
+        const banned = res.violation || res.limitReached;
+        setReportResult(
+          res.violation
+            ? t("reportBanned")
+            : res.limitReached
+              ? t("reportBannedLimit")
+              : t("reportClean"),
+        );
+        if (banned) setPartnerLeft(true);
       }
     } catch {
       setReportResult(t("reportError"));
@@ -197,7 +252,7 @@ function ChatPage() {
                 (partnerLeft ? "bg-destructive" : "bg-[oklch(0.78_0.18_145)]")
               }
             />
-            {partnerLeft ? t("partnerLeft") : t("connected")}
+            {partnerLeft ? (partnerOffline ? t("partnerOffline") : t("partnerLeft")) : t("connected")}
           </div>
         </div>
         <button
@@ -208,7 +263,7 @@ function ChatPage() {
           className="btn-pill btn-ghost-pill !p-2.5"
           aria-label={t("report")}
         >
-          <Flag className="h-5 w-5" />
+          <AlertTriangle className="h-5 w-5" />
         </button>
       </header>
 
@@ -280,7 +335,7 @@ function ChatPage() {
         })}
         {partnerLeft && (
           <div className="py-6 text-center text-sm text-muted-foreground animate-fade-up">
-            {t("partnerLeft")}
+            {partnerOffline ? t("partnerOffline") : t("partnerLeft")}
           </div>
         )}
       </div>
