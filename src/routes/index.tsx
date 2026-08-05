@@ -46,45 +46,25 @@ function Home() {
     [userId, gender, age, wantGender, ageRange],
   );
 
-  // Realtime + fast polling for partner while searching
+  // Poll for partner while searching
   useEffect(() => {
     if (!searching) return;
     let cancelled = false;
-
-    const go = (roomId: string) => {
-      if (cancelled) return;
-      cancelled = true;
-      setSearching(false);
-      feedback("match");
-      navigate({ to: "/chat/$roomId", params: { roomId } });
-    };
-
     const check = async () => {
       const { data } = await supabase.rpc("find_room_for_user", { p_user_id: userId });
-      if (typeof data === "string" && data) go(data);
+      if (!cancelled && typeof data === "string" && data) {
+        setSearching(false);
+        feedback("match");
+        navigate({ to: "/chat/$roomId", params: { roomId: data } });
+      }
     };
-
-    const ch = supabase
-      .channel(`match-${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "chat_rooms" },
-        (payload) => {
-          const r = payload.new as { id: string; user_a: string; user_b: string };
-          if (r.user_a === userId || r.user_b === userId) go(r.id);
-        },
-      )
-      .subscribe();
-
     check();
-    const id = setInterval(check, 700);
+    const id = setInterval(check, 1500);
     return () => {
       cancelled = true;
       clearInterval(id);
-      supabase.removeChannel(ch);
     };
   }, [searching, userId, navigate]);
-
 
   const handleFind = async () => {
     if (!userId) return;

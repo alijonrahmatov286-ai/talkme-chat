@@ -90,32 +90,16 @@ export const reportChat = createServerFn({ method: "POST" })
       }
     }
 
-    // 3 reports from distinct users within 24h => automatic 24h ban
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: recent } = await supabaseAdmin
-      .from("user_reports")
-      .select("reporter_id")
-      .eq("reported_id", reportedId)
-      .gte("created_at", since);
-    const uniqueReporters = new Set((recent ?? []).map((r) => r.reporter_id)).size;
-    const limitReached = uniqueReporters >= 3;
-
-    if (violation || limitReached) {
+    if (violation) {
       const bannedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       await supabaseAdmin.from("user_bans").insert({
         user_id: reportedId,
-        reason: violation ? category : "three_reports_24h",
+        reason: category,
         banned_until: bannedUntil,
       });
       await supabaseAdmin.from("chat_rooms").update({ active: false }).eq("id", data.roomId);
       await supabaseAdmin.from("waiting_queue").delete().eq("user_id", reportedId);
     }
 
-    return {
-      ok: true as const,
-      violation,
-      limitReached,
-      reports: uniqueReporters,
-      category,
-    };
+    return { ok: true as const, violation, category };
   });
