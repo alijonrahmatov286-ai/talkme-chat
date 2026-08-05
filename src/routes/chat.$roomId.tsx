@@ -335,7 +335,7 @@ function ChatPage() {
         })}
         {partnerLeft && (
           <div className="py-6 text-center text-sm text-muted-foreground animate-fade-up">
-            {t("partnerLeft")}
+            {partnerOffline ? t("partnerOffline") : t("partnerLeft")}
           </div>
         )}
       </div>
