@@ -278,7 +278,7 @@ function VoicePage() {
             setStatus("idle");
           }
         }
-      }, 1500);
+      }, 800);
     }
   };
 
