@@ -109,6 +109,53 @@ function ChatPage() {
     };
   }, [roomId, userId]);
 
+  // heartbeat + detect partner closing the app
+  useEffect(() => {
+    if (!room || !userId || partnerLeft) return;
+    const partnerId = room.user_a === userId ? room.user_b : room.user_a;
+    let cancelled = false;
+    let misses = 0;
+
+    const beat = async () => {
+      await supabase
+        .from("presence")
+        .upsert({ user_id: userId, last_seen: new Date().toISOString() }, { onConflict: "user_id" });
+      const { data } = await supabase
+        .from("presence")
+        .select("last_seen")
+        .eq("user_id", partnerId)
+        .maybeSingle();
+      if (cancelled) return;
+      const stale =
+        !data || Date.now() - new Date(data.last_seen).getTime() > 20_000;
+      misses = stale ? misses + 1 : 0;
+      if (misses >= 2) {
+        setPartnerOffline(true);
+        setPartnerLeft(true);
+        feedback("leave");
+        void supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
+      }
+    };
+
+    void beat();
+    const id = setInterval(beat, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, [room, userId, roomId, partnerLeft]);
+
+  // tell the partner immediately when this tab closes
+  useEffect(() => {
+    const onHide = () => {
+      void supabase.from("presence").delete().eq("user_id", userId);
+      void supabase.from("chat_rooms").update({ active: false }).eq("id", roomId);
+    };
+    window.addEventListener("pagehide", onHide);
+    return () => window.removeEventListener("pagehide", onHide);
+  }, [roomId, userId]);
+
+
   // auto-scroll
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
