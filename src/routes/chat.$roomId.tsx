@@ -43,6 +43,7 @@ function ChatPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
   const [partnerLeft, setPartnerLeft] = useState(false);
+  const [partnerOffline, setPartnerOffline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
