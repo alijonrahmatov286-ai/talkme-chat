@@ -214,7 +214,7 @@ function SettingsPage() {
       </section>
 
       {/* Legal */}
-      <section className="card-soft mt-4 p-5 animate-fade-up">
+      <section className="card-soft p-5 animate-fade-up">
         <h2 className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           {t("legal")}
         </h2>
