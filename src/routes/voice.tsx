@@ -161,7 +161,9 @@ function VoicePage() {
 
     chan.on("broadcast", { event: "offer" }, async ({ payload }) => {
       if (isInitiator || !pcRef.current) return;
+      if (pcRef.current.currentRemoteDescription) return;
       await pcRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      await flushIce();
       const answer = await pcRef.current.createAnswer();
       await pcRef.current.setLocalDescription(answer);
       await chan.send({ type: "broadcast", event: "answer", payload: { from: userId, sdp: answer } });
@@ -171,10 +173,15 @@ function VoicePage() {
       if (!isInitiator || !pcRef.current) return;
       if (pcRef.current.currentRemoteDescription) return;
       await pcRef.current.setRemoteDescription(new RTCSessionDescription(payload.sdp));
+      await flushIce();
     });
 
     chan.on("broadcast", { event: "ice" }, async ({ payload }) => {
       if (!pcRef.current || payload.from === userId) return;
+      if (!pcRef.current.remoteDescription) {
+        pendingIce.push(payload.candidate);
+        return;
+      }
       try {
         await pcRef.current.addIceCandidate(new RTCIceCandidate(payload.candidate));
       } catch (e) {
