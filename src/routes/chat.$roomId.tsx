@@ -142,8 +142,15 @@ function ChatPage() {
       if (!res.ok) {
         setReportResult(t("reportError"));
       } else {
-        setReportResult(res.violation ? t("reportBanned") : t("reportClean"));
-        if (res.violation) setPartnerLeft(true);
+        const banned = res.violation || res.limitReached;
+        setReportResult(
+          res.violation
+            ? t("reportBanned")
+            : res.limitReached
+              ? t("reportBannedLimit")
+              : t("reportClean"),
+        );
+        if (banned) setPartnerLeft(true);
       }
     } catch {
       setReportResult(t("reportError"));
