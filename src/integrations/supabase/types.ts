@@ -158,21 +158,30 @@ export type Database = {
         Row: {
           content: string
           created_at: string
+          deleted_at: string | null
+          edited_at: string | null
           id: string
+          read_at: string | null
           room_id: string
           sender_id: string
         }
         Insert: {
           content: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
+          read_at?: string | null
           room_id: string
           sender_id: string
         }
         Update: {
           content?: string
           created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
           id?: string
+          read_at?: string | null
           room_id?: string
           sender_id?: string
         }
