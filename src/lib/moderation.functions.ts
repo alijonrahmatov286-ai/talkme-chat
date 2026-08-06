@@ -90,7 +90,19 @@ export const reportChat = createServerFn({ method: "POST" })
       }
     }
 
-    if (violation) {
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const { data: recentReports } = await supabaseAdmin
+      .from("user_reports")
+      .select("reporter_id")
+      .eq("reported_id", reportedId)
+      .gte("created_at", since);
+
+    const uniqueReporters = new Set((recentReports ?? []).map((r) => r.reporter_id));
+    const reportCount = uniqueReporters.size;
+    const threshold = reportCount >= 3;
+
+    if (violation || threshold) {
+      if (threshold && !violation) category = "three_reports";
       const bannedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       await supabaseAdmin.from("user_bans").insert({
         user_id: reportedId,
@@ -101,5 +113,11 @@ export const reportChat = createServerFn({ method: "POST" })
       await supabaseAdmin.from("waiting_queue").delete().eq("user_id", reportedId);
     }
 
-    return { ok: true as const, violation, category };
+    return {
+      ok: true as const,
+      violation: violation || threshold,
+      category,
+      reportCount,
+    };
   });
+
