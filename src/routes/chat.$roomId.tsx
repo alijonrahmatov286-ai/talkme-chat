@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Send, Flag, Wifi, WifiOff } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ArrowLeft, Send, AlertTriangle, WifiOff, Check, CheckCheck, Pencil, Trash2, X } from "lucide-react";
 import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
@@ -19,13 +19,16 @@ export const Route = createFileRoute("/chat/$roomId")({
   component: ChatPage,
 });
 
-
 interface Message {
   id: string;
   room_id: string;
   sender_id: string;
   content: string;
   created_at: string;
+  read_at?: string | null;
+  edited_at?: string | null;
+  deleted_at?: string | null;
+  pending?: boolean;
 }
 
 interface Room {
@@ -42,6 +45,8 @@ function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [room, setRoom] = useState<Room | null>(null);
   const [input, setInput] = useState("");
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [actionsFor, setActionsFor] = useState<string | null>(null);
   const [partnerLeft, setPartnerLeft] = useState(false);
   const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
@@ -50,6 +55,17 @@ function ChatPage() {
   const [reportResult, setReportResult] = useState<string | null>(null);
   const network = useNetworkStatus();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const upsert = useCallback((msg: Message) => {
+    setMessages((prev) => {
+      const i = prev.findIndex((m) => m.id === msg.id);
+      if (i === -1) return [...prev, msg];
+      const next = [...prev];
+      next[i] = { ...next[i], ...msg, pending: false };
+      return next;
+    });
+  }, []);
 
   // load room + history
   useEffect(() => {
@@ -87,9 +103,14 @@ function ChatPage() {
         { event: "INSERT", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` },
         (payload) => {
           const msg = payload.new as Message;
-          setMessages((prev) => [...prev, msg]);
+          upsert(msg);
           if (msg.sender_id !== userId) feedback("message");
         },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `room_id=eq.${roomId}` },
+        (payload) => upsert(payload.new as Message),
       )
       .on(
         "postgres_changes",
@@ -107,7 +128,21 @@ function ChatPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [roomId, userId]);
+  }, [roomId, userId, upsert]);
+
+  // mark partner messages as read
+  useEffect(() => {
+    const unread = messages.filter((m) => m.sender_id !== userId && !m.read_at && !m.pending);
+    if (unread.length === 0) return;
+    const ids = unread.map((m) => m.id);
+    setMessages((prev) =>
+      prev.map((m) => (ids.includes(m.id) ? { ...m, read_at: new Date().toISOString() } : m)),
+    );
+    void supabase
+      .from("messages")
+      .update({ read_at: new Date().toISOString() })
+      .in("id", ids);
+  }, [messages, userId]);
 
   // auto-scroll
   useEffect(() => {
@@ -116,13 +151,62 @@ function ChatPage() {
 
   const send = async () => {
     const v = input.trim();
-    if (!v || !room?.active) return;
-    setInput("");
-    await supabase.from("messages").insert({
+    if (!v) return;
+
+    if (editingId) {
+      const id = editingId;
+      setEditingId(null);
+      setInput("");
+      setMessages((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, content: v, edited_at: new Date().toISOString() } : m)),
+      );
+      await supabase
+        .from("messages")
+        .update({ content: v, edited_at: new Date().toISOString() })
+        .eq("id", id);
+      return;
+    }
+
+    if (!room?.active) return;
+    const tempId = `temp-${crypto.randomUUID()}`;
+    const optimistic: Message = {
+      id: tempId,
       room_id: roomId,
       sender_id: userId,
       content: v,
+      created_at: new Date().toISOString(),
+      pending: true,
+    };
+    setInput("");
+    setMessages((prev) => [...prev, optimistic]);
+
+    const { data: inserted } = await supabase
+      .from("messages")
+      .insert({ room_id: roomId, sender_id: userId, content: v })
+      .select()
+      .maybeSingle();
+
+    setMessages((prev) => {
+      const without = prev.filter((m) => m.id !== tempId);
+      if (!inserted) return without;
+      if (without.some((m) => m.id === inserted.id)) return without;
+      return [...without, inserted as Message];
     });
+  };
+
+  const removeMessage = async (id: string) => {
+    setActionsFor(null);
+    setMessages((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, deleted_at: new Date().toISOString() } : m)),
+    );
+    await supabase.from("messages").update({ deleted_at: new Date().toISOString() }).eq("id", id);
+  };
+
+  const startEdit = (m: Message) => {
+    setActionsFor(null);
+    setEditingId(m.id);
+    setInput(m.content);
+    inputRef.current?.focus();
   };
 
   const leave = async () => {
@@ -142,7 +226,7 @@ function ChatPage() {
       if (!res.ok) {
         setReportResult(t("reportError"));
       } else {
-        setReportResult(res.violation ? t("reportBanned") : t("reportClean"));
+        setReportResult(res.violation ? t("reportBanned") : t("reportSent"));
         if (res.violation) setPartnerLeft(true);
       }
     } catch {
@@ -181,15 +265,11 @@ function ChatPage() {
       )}
 
       <header className="card-soft mb-3 flex items-center justify-between gap-2 px-4 py-2.5 animate-fade-up">
-        <button
-          onClick={leave}
-          className="btn-pill btn-ghost-pill !p-2.5"
-          aria-label={t("back")}
-        >
+        <button onClick={leave} className="btn-pill btn-ghost-pill !p-2.5" aria-label={t("back")}>
           <ArrowLeft className="h-5 w-5" />
         </button>
         <div className="flex flex-col items-center">
-          <div className="text-sm font-semibold">{t("stranger")}</div>
+          <div className="text-sm font-semibold tracking-wide">{t("stranger")}</div>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <span
               className={
@@ -208,7 +288,7 @@ function ChatPage() {
           className="btn-pill btn-ghost-pill !p-2.5"
           aria-label={t("report")}
         >
-          <Flag className="h-5 w-5" />
+          <AlertTriangle className="h-5 w-5" />
         </button>
       </header>
 
@@ -216,7 +296,9 @@ function ChatPage() {
         <DialogContent className="max-w-sm rounded-3xl">
           <DialogHeader>
             <DialogTitle>{t("reportTitle")}</DialogTitle>
-            <DialogDescription>{t("reportHint")}</DialogDescription>
+            <DialogDescription>
+              {t("reportHint")} {t("reportHint3")}
+            </DialogDescription>
           </DialogHeader>
           {reportResult ? (
             <p className="text-sm">{reportResult}</p>
@@ -249,32 +331,69 @@ function ChatPage() {
         </DialogContent>
       </Dialog>
 
-
-      <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto px-1 py-2">
+      <div ref={scrollRef} className="flex-1 space-y-1.5 overflow-y-auto px-1 py-2">
         {loading && (
           <div className="flex flex-col items-center justify-center gap-3 py-12 animate-fade-up">
-            <div className="ios-spinner ios-spinner-brand" style={{ width: "2rem", height: "2rem", borderWidth: "3px" }} />
+            <div
+              className="ios-spinner ios-spinner-brand"
+              style={{ width: "2rem", height: "2rem", borderWidth: "3px" }}
+            />
             <span className="text-xs text-muted-foreground">{t("loadingMessages")}</span>
           </div>
         )}
 
         {messages.map((m) => {
           const mine = m.sender_id === userId;
+          const deleted = Boolean(m.deleted_at);
           return (
-            <div
-              key={m.id}
-              className={"flex animate-fade-up " + (mine ? "justify-end" : "justify-start")}
-            >
-              <div
+            <div key={m.id} className={"flex flex-col " + (mine ? "items-end" : "items-start")}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (mine && !deleted) setActionsFor(actionsFor === m.id ? null : m.id);
+                }}
                 className={
-                  "max-w-[78%] rounded-full px-4 py-2.5 text-sm leading-snug " +
-                  (mine
-                    ? "bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_8px_24px_-12px_var(--brand-glow)]"
-                    : "bg-card text-foreground border border-border")
+                  "msg-bubble max-w-[78%] text-left rounded-full px-4 py-2.5 text-sm leading-snug transition-[transform,opacity] duration-300 " +
+                  (m.pending ? "opacity-60 " : "opacity-100 ") +
+                  (deleted
+                    ? "border border-dashed border-border bg-transparent italic text-muted-foreground"
+                    : mine
+                      ? "bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_8px_24px_-12px_var(--brand-glow)]"
+                      : "bg-card text-foreground border border-border")
                 }
               >
-                {m.content}
+                {deleted ? t("messageDeleted") : m.content}
+              </button>
+
+              <div className="mt-0.5 flex items-center gap-1 px-3 text-[10px] text-muted-foreground">
+                {m.edited_at && !deleted && <span>{t("edited")}</span>}
+                {mine && !deleted && !m.pending && (
+                  m.read_at ? (
+                    <CheckCheck className="h-3 w-3 text-[var(--brand)]" />
+                  ) : (
+                    <Check className="h-3 w-3" />
+                  )
+                )}
               </div>
+
+              {actionsFor === m.id && mine && !deleted && (
+                <div className="mb-1 flex gap-2 animate-fade-up">
+                  <button
+                    onClick={() => startEdit(m)}
+                    className="btn-pill btn-ghost-pill !px-3 !py-1.5 text-xs"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    {t("edit")}
+                  </button>
+                  <button
+                    onClick={() => removeMessage(m.id)}
+                    className="btn-pill btn-ghost-pill !px-3 !py-1.5 text-xs text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    {t("deleteMsg")}
+                  </button>
+                </div>
+              )}
             </div>
           );
         })}
@@ -295,19 +414,33 @@ function ChatPage() {
             e.preventDefault();
             send();
           }}
-          className="card-soft mt-3 flex items-center gap-2 p-2"
+          className="card-soft mt-3 flex items-center gap-2 p-2 transition-all duration-300"
         >
+          {editingId && (
+            <button
+              type="button"
+              onClick={() => {
+                setEditingId(null);
+                setInput("");
+              }}
+              className="btn-pill btn-ghost-pill !p-2"
+              aria-label={t("close")}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
           <input
+            ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder={t("typeMessage")}
+            placeholder={editingId ? t("edit") : t("typeMessage")}
             className="flex-1 bg-transparent px-3 py-2 text-sm outline-none placeholder:text-muted-foreground"
           />
           <button
             type="submit"
             disabled={!input.trim()}
             className="btn-pill btn-brand !p-3"
-            aria-label={t("send")}
+            aria-label={editingId ? t("save") : t("send")}
           >
             <Send className="h-5 w-5" />
           </button>
