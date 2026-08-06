@@ -112,6 +112,15 @@ const en = {
   privacyBody:
     "• The app is anonymous: we do not ask for your name, email or phone.\n• You get a random ID stored on your device only.\n• Gender and age are used only to match you with a partner.\n• Chat messages are stored to keep the conversation working and to review reports.\n• When you report a chat, its text is sent to an automated moderation service.\n• Language, colour, theme, sound and vibration settings are stored on your device.\n• We do not sell your data and do not show ads.",
   close: "Close",
+  edit: "Edit",
+  deleteMsg: "Delete",
+  edited: "edited",
+  messageDeleted: "Message deleted",
+  save: "Save",
+  read: "Read",
+  reportSent: "Report sent. Thanks!",
+  reportHint3: "Three reports lead to an automatic 24-hour block.",
+
 } as const;
 
 const ru: Record<keyof typeof en, string> = {
