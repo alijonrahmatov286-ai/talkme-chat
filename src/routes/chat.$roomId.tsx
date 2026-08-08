@@ -104,8 +104,12 @@ function ChatPage() {
         (payload) => {
           const msg = payload.new as Message;
           upsert(msg);
-          if (msg.sender_id !== userId) feedback("message");
+          if (msg.sender_id !== userId) {
+            feedback("message");
+            notifyMessage(t("newMessageTitle"), msg.content.slice(0, 120), `room-${roomId}`);
+          }
         },
+
       )
       .on(
         "postgres_changes",
