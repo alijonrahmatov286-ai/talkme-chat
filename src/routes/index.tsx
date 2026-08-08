@@ -104,7 +104,7 @@ function Home() {
           {t("banned24")}
         </div>
       )}
-      <header className="mb-6 flex items-center justify-between animate-fade-up">
+      <header className="mb-4 flex items-center justify-between animate-fade-up">
         <div className="flex items-center gap-2">
           <div className="grid h-10 w-10 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_10px_30px_-10px_var(--brand-glow)]">
             <MessageCircle className="h-5 w-5" />
@@ -116,7 +116,7 @@ function Home() {
         </Link>
       </header>
 
-      <section className="card-soft mb-6 flex items-center justify-between gap-3 px-5 py-4 animate-fade-up">
+      <section className="card-soft mb-4 flex items-center justify-between gap-3 px-5 py-3 animate-fade-up">
         <div className="flex items-center gap-3">
           <span className="pulse-dot" />
           <div>
@@ -130,9 +130,9 @@ function Home() {
       {searching ? (
         <SearchingPanel onCancel={handleCancel} />
       ) : (
-        <div className="card-soft p-5 animate-fade-up">
-          <h2 className="mb-1 text-lg font-semibold">{t("tagline")}</h2>
-          <p className="mb-5 text-sm text-muted-foreground">
+        <div className="card-soft p-4 animate-fade-up">
+          <h2 className="mb-1 text-base font-semibold">{t("tagline")}</h2>
+          <p className="mb-4 text-sm text-muted-foreground">
             <Sparkles className="mr-1 inline h-4 w-4" />
             {t("findPartner")}
           </p>
@@ -160,7 +160,7 @@ function Home() {
             />
           </Field>
 
-          <div className="my-4 h-px bg-border" />
+          <div className="my-3 h-px bg-border" />
 
           <Field label={t("lookingFor")}>
             <Segmented
@@ -188,7 +188,7 @@ function Home() {
             />
           </Field>
 
-          <button onClick={handleFind} className="btn-pill btn-brand mt-5 w-full text-base">
+          <button onClick={handleFind} className="btn-pill btn-brand mt-4 w-full text-base">
             <MessageCircle className="h-5 w-5" />
             {t("findPartner")}
           </button>
@@ -201,8 +201,8 @@ function Home() {
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="mb-4 block">
-      <span className="mb-2 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <label className="mb-3 block">
+      <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
       {children}
@@ -277,7 +277,7 @@ function ChipGroup<T extends string | number>({
 function SearchingPanel({ onCancel }: { onCancel: () => void }) {
   const { t } = useApp();
   return (
-    <div className="card-soft flex flex-col items-center gap-5 p-8 animate-fade-up">
+    <div className="card-soft flex flex-col items-center gap-4 p-6 animate-fade-up">
       <div className="relative grid h-24 w-24 place-items-center">
         <div className="absolute inset-0 animate-float rounded-full bg-[var(--brand)]/20 blur-2xl" />
         <div className="grid h-20 w-20 place-items-center rounded-full bg-[var(--brand)] text-[var(--brand-foreground)] shadow-[0_20px_50px_-10px_var(--brand-glow)]">

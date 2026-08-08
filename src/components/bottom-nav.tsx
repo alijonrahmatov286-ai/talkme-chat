@@ -12,8 +12,8 @@ export function BottomNav() {
   ] as const;
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
-      <div className="mx-auto max-w-md px-4 pb-6">
+    <nav className="fixed inset-x-0 bottom-0 z-40 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+      <div className="mx-auto max-w-md px-4 pb-4">
         <div className="card-soft flex items-center justify-around gap-2 p-2">
           {items.map((it) => {
             const active = pathname === it.to;
