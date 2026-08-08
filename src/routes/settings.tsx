@@ -213,8 +213,44 @@ function SettingsPage() {
             </span>
             {vibration && <Check className="h-5 w-5" />}
           </button>
+          <button
+            type="button"
+            disabled={notifPerm === "unsupported" || notifPerm === "denied"}
+            onClick={async () => {
+              feedback("tap");
+              if (notifOn) {
+                setNotifOn(false);
+                setNotifPref(false);
+                return;
+              }
+              const perm = await requestNotifPermission();
+              setNotifPerm(perm);
+              const granted = perm === "granted";
+              setNotifOn(granted);
+              setNotifPref(granted);
+            }}
+            className={
+              "btn-pill w-full justify-between !rounded-2xl !px-4 !py-3 disabled:opacity-50 " +
+              (notifOn ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
+            <span className="flex items-center gap-3">
+              {notifOn ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+              <span className="flex flex-col items-start">
+                <span className="text-sm font-medium">{t("notifications")}</span>
+                {notifPerm === "denied" && (
+                  <span className="text-[11px] opacity-70">{t("notificationsBlocked")}</span>
+                )}
+                {notifPerm === "unsupported" && (
+                  <span className="text-[11px] opacity-70">{t("notificationsUnsupported")}</span>
+                )}
+              </span>
+            </span>
+            {notifOn && <Check className="h-5 w-5" />}
+          </button>
         </div>
       </section>
+
 
       {/* Legal */}
       <section className="card-soft mt-4 p-5 animate-fade-up">
