@@ -120,6 +120,11 @@ const en = {
   read: "Read",
   reportSent: "Report sent. Thanks!",
   reportHint3: "Three reports lead to an automatic 24-hour block.",
+  notifications: "Notifications",
+  notificationsBlocked: "Blocked in browser settings",
+  notificationsUnsupported: "Not supported on this device",
+  newMessageTitle: "New message",
+
 
 } as const;
 
