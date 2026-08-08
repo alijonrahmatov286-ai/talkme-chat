@@ -98,7 +98,7 @@ function Home() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-28 pt-8">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-5 pb-32 pt-4">
       {banned && (
         <div className="card-soft mb-4 border border-destructive/40 px-4 py-3 text-sm text-destructive animate-fade-up">
           {t("banned24")}
