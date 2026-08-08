@@ -35,6 +35,16 @@ function SettingsPage() {
     sound, setSound, vibration, setVibration,
   } = useApp();
 
+  const [notifPerm, setNotifPerm] = useState<NotifPermission>("default");
+  const [notifOn, setNotifOn] = useState(false);
+
+  useEffect(() => {
+    const perm = getPermission();
+    setNotifPerm(perm);
+    setNotifOn(perm === "granted" && getNotifPref());
+  }, []);
+
+
   const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
   const currentBrand = BRANDS.find((b) => b.code === brand) ?? BRANDS[0];
 
