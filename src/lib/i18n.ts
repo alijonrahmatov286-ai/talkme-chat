@@ -205,6 +205,11 @@ const ru: Record<keyof typeof en, string> = {
   read: "Прочитано",
   reportSent: "Жалоба отправлена. Спасибо!",
   reportHint3: "Три жалобы — автоматическая блокировка на 24 часа.",
+  notifications: "Уведомления",
+  notificationsBlocked: "Запрещены в настройках браузера",
+  notificationsUnsupported: "Не поддерживается на этом устройстве",
+  newMessageTitle: "Новое сообщение",
+
 
 };
 
