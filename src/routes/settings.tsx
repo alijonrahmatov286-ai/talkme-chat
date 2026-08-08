@@ -1,9 +1,18 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck, Bell, BellOff } from "lucide-react";
 import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
+import {
+  getNotifPref,
+  getPermission,
+  requestNotifPermission,
+  setNotifPref,
+  type NotifPermission,
+} from "@/lib/notifications";
 import { LANGUAGES, type Lang } from "@/lib/i18n";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import {
   Dialog,
   DialogContent,
@@ -25,6 +34,16 @@ function SettingsPage() {
     theme, setTheme,
     sound, setSound, vibration, setVibration,
   } = useApp();
+
+  const [notifPerm, setNotifPerm] = useState<NotifPermission>("default");
+  const [notifOn, setNotifOn] = useState(false);
+
+  useEffect(() => {
+    const perm = getPermission();
+    setNotifPerm(perm);
+    setNotifOn(perm === "granted" && getNotifPref());
+  }, []);
+
 
   const currentLang = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
   const currentBrand = BRANDS.find((b) => b.code === brand) ?? BRANDS[0];
@@ -213,8 +232,44 @@ function SettingsPage() {
             </span>
             {vibration && <Check className="h-5 w-5" />}
           </button>
+          <button
+            type="button"
+            disabled={notifPerm === "unsupported" || notifPerm === "denied"}
+            onClick={async () => {
+              feedback("tap");
+              if (notifOn) {
+                setNotifOn(false);
+                setNotifPref(false);
+                return;
+              }
+              const perm = await requestNotifPermission();
+              setNotifPerm(perm);
+              const granted = perm === "granted";
+              setNotifOn(granted);
+              setNotifPref(granted);
+            }}
+            className={
+              "btn-pill w-full justify-between !rounded-2xl !px-4 !py-3 disabled:opacity-50 " +
+              (notifOn ? "btn-brand" : "btn-ghost-pill")
+            }
+          >
+            <span className="flex items-center gap-3">
+              {notifOn ? <Bell className="h-5 w-5" /> : <BellOff className="h-5 w-5" />}
+              <span className="flex flex-col items-start">
+                <span className="text-sm font-medium">{t("notifications")}</span>
+                {notifPerm === "denied" && (
+                  <span className="text-[11px] opacity-70">{t("notificationsBlocked")}</span>
+                )}
+                {notifPerm === "unsupported" && (
+                  <span className="text-[11px] opacity-70">{t("notificationsUnsupported")}</span>
+                )}
+              </span>
+            </span>
+            {notifOn && <Check className="h-5 w-5" />}
+          </button>
         </div>
       </section>
+
 
       {/* Legal */}
       <section className="card-soft mt-4 p-5 animate-fade-up">

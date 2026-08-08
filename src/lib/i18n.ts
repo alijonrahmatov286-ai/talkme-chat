@@ -120,6 +120,11 @@ const en = {
   read: "Read",
   reportSent: "Report sent. Thanks!",
   reportHint3: "Three reports lead to an automatic 24-hour block.",
+  notifications: "Notifications",
+  notificationsBlocked: "Blocked in browser settings",
+  notificationsUnsupported: "Not supported on this device",
+  newMessageTitle: "New message",
+
 
 } as const;
 
@@ -200,6 +205,11 @@ const ru: Record<keyof typeof en, string> = {
   read: "Прочитано",
   reportSent: "Жалоба отправлена. Спасибо!",
   reportHint3: "Три жалобы — автоматическая блокировка на 24 часа.",
+  notifications: "Уведомления",
+  notificationsBlocked: "Запрещены в настройках браузера",
+  notificationsUnsupported: "Не поддерживается на этом устройстве",
+  newMessageTitle: "Новое сообщение",
+
 
 };
 

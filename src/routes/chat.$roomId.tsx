@@ -5,6 +5,8 @@ import { useApp } from "@/lib/app-context";
 import { supabase } from "@/integrations/supabase/client";
 import { feedback } from "@/lib/feedback";
 import { useNetworkStatus } from "@/lib/use-network";
+import { notifyMessage } from "@/lib/notifications";
+
 import { reportChat } from "@/lib/moderation.functions";
 import {
   Dialog,
@@ -104,8 +106,12 @@ function ChatPage() {
         (payload) => {
           const msg = payload.new as Message;
           upsert(msg);
-          if (msg.sender_id !== userId) feedback("message");
+          if (msg.sender_id !== userId) {
+            feedback("message");
+            notifyMessage(t("newMessageTitle"), msg.content.slice(0, 120), `room-${roomId}`);
+          }
         },
+
       )
       .on(
         "postgres_changes",
