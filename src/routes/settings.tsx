@@ -1,9 +1,18 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck, Bell, BellOff } from "lucide-react";
 import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
+import {
+  getNotifPref,
+  getPermission,
+  requestNotifPermission,
+  setNotifPref,
+  type NotifPermission,
+} from "@/lib/notifications";
 import { LANGUAGES, type Lang } from "@/lib/i18n";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
 import {
   Dialog,
   DialogContent,
