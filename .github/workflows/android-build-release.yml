@@ -12,26 +12,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      NODE_VERSION: 18
-      JAVA_VERSION: 11
-      ANDROID_API_LEVEL: 33
-      ANDROID_BUILD_TOOLS: 33.0.2
+      NODE_VERSION: 20
+      JAVA_VERSION: 17
+      ANDROID_API_LEVEL: 34
+      ANDROID_BUILD_TOOLS: 34.0.0
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
-      - name: Cache node modules
-        uses: actions/cache@v4
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+          cache: 'npm'
 
       - name: Install dependencies
         run: npm ci
@@ -44,59 +38,95 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
 
-      - name: Set up Android SDK (install required components)
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
         with:
           api-level: ${{ env.ANDROID_API_LEVEL }}
-          arch: x86_64
-          force-avd-creation: false
+          build-tools: ${{ env.ANDROID_BUILD_TOOLS }}
 
       - name: Install Capacitor CLI
         run: npm install -g @capacitor/cli
 
-      - name: Initialize Capacitor (idempotent)
-        run: |
-          npx cap init talkme com.example.talkme --web-dir=dist || true
+      - name: Verify Capacitor installation
+        run: npx cap --version
 
-      - name: Add Android platform (idempotent)
-        run: |
-          npx cap add android || true
+      - name: Initialize Capacitor
+        run: npx cap init talkme com.talkme.app --web-dir=dist 2>/dev/null || echo "Capacitor already initialized"
 
-      - name: Copy web assets to Android
+      - name: Add Android platform
+        run: npx cap add android 2>/dev/null || echo "Android platform already added"
+
+      - name: Sync Capacitor
+        run: npx cap sync
+
+      - name: Copy web assets
         run: npx cap copy android
 
-      - name: Add microphone and camera permissions (if manifest exists)
+      - name: Set Gradle executable permissions
+        working-directory: android
         run: |
-          MANIFEST=android/app/src/main/AndroidManifest.xml
-          if [ -f "$MANIFEST" ]; then
-            grep -q 'android.permission.RECORD_AUDIO' "$MANIFEST" || sed -i "/<manifest /a \    <uses-permission android:name=\"android.permission.RECORD_AUDIO\" />" $MANIFEST
-            grep -q 'android.permission.CAMERA' "$MANIFEST" || sed -i "/<manifest /a \    <uses-permission android:name=\"android.permission.CAMERA\" />" $MANIFEST
+          if [ -f gradlew ]; then
+            chmod +x gradlew
+            echo "✓ Gradle wrapper is executable"
+          else
+            echo "✗ Gradle wrapper not found!"
+            exit 1
           fi
 
       - name: Build Android Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon --stacktrace -x lint
 
-      - name: Upload APK as workflow artifact
+      - name: Check APK was created
+        run: |
+          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            echo "✓ APK created successfully"
+            ls -lh android/app/build/outputs/apk/debug/app-debug.apk
+          else
+            echo "✗ APK not found!"
+            find android/app/build -name "*.apk" 2>/dev/null || echo "No APK files found"
+            exit 1
+          fi
+
+      - name: Upload APK as artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 30
 
-      - name: Create GitHub Release (debug)
+      - name: Create GitHub Release
+        if: success()
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         with:
           tag_name: debug-${{ github.run_number }}
-          release_name: Debug APK ${{ github.run_number }}
+          name: Debug APK Build #${{ github.run_number }}
           draft: false
           prerelease: true
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: android/app/build/outputs/apk/debug/app-debug.apk
-          asset_name: app-debug.apk
-          asset_content_type: application/vnd.android.package-archive
+      - name: Print build summary
+        if: always()
+        run: |
+          echo "========================================="
+          echo "Build Summary"
+          echo "========================================="
+          echo "Status: ${{ job.status }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "Branch: ${{ github.ref }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "========================================="
+
+      - name: Debug on failure
+        if: failure()
+        run: |
+          echo "Build failed! Checking logs..."
+          if [ -d "android/app/build" ]; then
+            find android/app/build -name "*.log" -exec cat {} \; 2>/dev/null | head -100
+          fi
