@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
+import { Settings as SettingsIcon, MessageCircle, Sparkles, Check } from "lucide-react";
 import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
