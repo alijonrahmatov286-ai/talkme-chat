@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff, Check } from "lucide-react";
+import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff } from "lucide-react";
 import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
@@ -480,10 +480,8 @@ function Segmented({
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
-            aria-pressed={active}
             className={"btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")}
           >
-            {active && <Check className="h-3.5 w-3.5" />}
             {o.label}
           </button>
         );
@@ -513,12 +511,10 @@ function ChipGroup<T extends string | number>({
             key={String(o.value)}
             type="button"
             onClick={() => onChange(o.value)}
-            aria-pressed={active}
             className={
               "btn-pill !px-4 !py-2 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")
             }
           >
-            {active && <Check className="h-3.5 w-3.5" />}
             {o.label}
           </button>
         );
