@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff } from "lucide-react";
+import { Settings as SettingsIcon, Phone, Sparkles, PhoneOff, Mic, MicOff, Check } from "lucide-react";
 import { useApp, type Gender } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { BottomNav } from "@/components/bottom-nav";
