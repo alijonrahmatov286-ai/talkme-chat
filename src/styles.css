@@ -184,12 +184,12 @@
 }
 
 @utility btn-ghost-pill {
-  background: color-mix(in oklab, var(--card) 80%, transparent);
+  background: transparent;
   color: var(--foreground);
   border: 1px solid var(--border);
   backdrop-filter: blur(12px);
-  box-shadow: var(--shadow-sm);
-  &:hover { background: var(--card); }
+  box-shadow: none;
+  &:hover { background: color-mix(in oklab, var(--card) 50%, transparent); }
 }
 
 @utility card-soft {
