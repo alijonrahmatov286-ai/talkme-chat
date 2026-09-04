@@ -480,8 +480,10 @@ function Segmented({
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
+            aria-pressed={active}
             className={"btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")}
           >
+            {active && <Check className="h-3.5 w-3.5" />}
             {o.label}
           </button>
         );
