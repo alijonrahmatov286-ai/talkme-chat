@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Settings as SettingsIcon, MessageCircle, Sparkles } from "lucide-react";
+import { Settings as SettingsIcon, MessageCircle, Sparkles, Check } from "lucide-react";
 import { useApp, type Gender, type UserProfile } from "@/lib/app-context";
 import { useOnlineCount } from "@/lib/use-online";
 import { supabase } from "@/integrations/supabase/client";
@@ -228,10 +228,12 @@ function Segmented({
             key={o.value}
             type="button"
             onClick={() => onChange(o.value)}
+            aria-pressed={active}
             className={
               "btn-pill flex-1 text-sm " + (active ? "btn-brand" : "btn-ghost-pill")
             }
           >
+            {active && <Check className="h-3.5 w-3.5" />}
             {o.label}
           </button>
         );
@@ -261,11 +263,13 @@ function ChipGroup<T extends string | number>({
             key={String(o.value)}
             type="button"
             onClick={() => onChange(o.value)}
+            aria-pressed={active}
             className={
               "btn-pill !px-4 !py-2 text-sm " +
               (active ? "btn-brand" : "btn-ghost-pill")
             }
           >
+            {active && <Check className="h-3.5 w-3.5" />}
             {o.label}
           </button>
         );
