@@ -83,34 +83,21 @@ export const reportChat = createServerFn({ method: "POST" })
       }
     }
 
-    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const { data: recentReports } = await supabaseAdmin
-      .from("user_reports")
-      .select("reporter_id")
-      .eq("reported_id", reportedId)
-      .gte("created_at", since);
-
-    const uniqueReporters = new Set((recentReports ?? []).map((r) => r.reporter_id));
-    const reportCount = uniqueReporters.size;
-    const threshold = reportCount >= 3;
-
-    if (violation || threshold) {
-      if (threshold && !violation) category = "three_reports";
-      const bannedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-      await supabaseAdmin.from("user_bans").insert({
-        user_id: reportedId,
-        reason: category,
-        banned_until: bannedUntil,
-      });
-      await supabaseAdmin.from("chat_rooms").update({ active: false }).eq("id", data.roomId);
-      await supabaseAdmin.from("waiting_queue").delete().eq("user_id", reportedId);
-    }
+    // No auto-ban: the report goes to the admin queue for a human decision.
+    await supabaseAdmin.from("user_reports").insert({
+      reporter_id: data.reporterId,
+      reported_id: reportedId,
+      room_id: data.roomId,
+      reason: data.reason?.trim() || "user_report",
+      status: "pending",
+      ai_violation: violation,
+      ai_category: category,
+    });
 
     return {
       ok: true as const,
-      violation: violation || threshold,
+      violation: false,
       category,
-      reportCount,
     };
   });
 
