@@ -69,7 +69,9 @@ function SettingsPage() {
         <Link to="/" className="btn-pill btn-ghost-pill !p-3" aria-label={t("back")}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-xl font-bold">{t("settings")}</h1>
+        <h1 className="select-none text-xl font-bold" onClick={secretTap}>
+          {t("settings")}
+        </h1>
       </header>
 
       {/* Language */}
