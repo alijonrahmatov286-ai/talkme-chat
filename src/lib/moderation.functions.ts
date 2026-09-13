@@ -43,13 +43,6 @@ export const reportChat = createServerFn({ method: "POST" })
       .join("\n")
       .slice(-8000);
 
-    await supabaseAdmin.from("user_reports").insert({
-      reporter_id: data.reporterId,
-      reported_id: reportedId,
-      room_id: data.roomId,
-      reason: data.reason?.trim() || "user_report",
-    });
-
     let violation = false;
     let category = "rules_violation";
 
