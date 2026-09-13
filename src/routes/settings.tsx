@@ -1,5 +1,5 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, Volume2, VolumeX, Vibrate, VibrateOff, Moon, Sun, ChevronDown, ChevronRight, ScrollText, ShieldCheck, Bell, BellOff } from "lucide-react";
 import { useApp, BRANDS, type Brand } from "@/lib/app-context";
 import { feedback } from "@/lib/feedback";
@@ -35,6 +35,21 @@ function SettingsPage() {
     sound, setSound, vibration, setVibration,
   } = useApp();
 
+  const navigate = useNavigate();
+  const tapsRef = useRef<{ count: number; last: number }>({ count: 0, last: 0 });
+
+  const secretTap = () => {
+    const now = Date.now();
+    const s = tapsRef.current;
+    s.count = now - s.last < 800 ? s.count + 1 : 1;
+    s.last = now;
+    if (s.count >= 7) {
+      s.count = 0;
+      feedback("tap");
+      navigate({ to: "/admin" });
+    }
+  };
+
   const [notifPerm, setNotifPerm] = useState<NotifPermission>("default");
   const [notifOn, setNotifOn] = useState(false);
 
@@ -54,7 +69,9 @@ function SettingsPage() {
         <Link to="/" className="btn-pill btn-ghost-pill !p-3" aria-label={t("back")}>
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-xl font-bold">{t("settings")}</h1>
+        <h1 className="select-none text-xl font-bold" onClick={secretTap}>
+          {t("settings")}
+        </h1>
       </header>
 
       {/* Language */}
