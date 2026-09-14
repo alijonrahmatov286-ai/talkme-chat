@@ -140,6 +140,45 @@ function AdminPage() {
     }
   };
 
+  // живое обновление списка жалоб
+  useEffect(() => {
+    if (!authed || !code) return;
+    const tick = () => {
+      if (document.visibilityState === "visible") void load(code, status, true);
+    };
+    const id = window.setInterval(tick, 4000);
+    window.addEventListener("focus", tick);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", tick);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [authed, code, status, load]);
+
+  // живое обновление открытой переписки
+  useEffect(() => {
+    if (!authed || !code || !openId) return;
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void (async () => {
+        try {
+          const res = await adminGetTranscript({ data: { code, reportId: openId } });
+          if (res.ok) {
+            setMessages((prev) => {
+              const next = res.messages as Msg[];
+              return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+            });
+          }
+        } catch {
+          /* игнорируем разовые сбои сети */
+        }
+      })();
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [authed, code, openId]);
+
+
   if (!authed) {
     return (
       <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5">
