@@ -65,14 +65,20 @@ function AdminPage() {
   const [msgLoading, setMsgLoading] = useState(false);
 
   const load = useCallback(
-    async (c: string, s: Status) => {
-      setLoading(true);
+    async (c: string, s: Status, silent = false) => {
+      if (!silent) setLoading(true);
       try {
         const res = await adminListReports({ data: { code: c, status: s } });
-        if (res.ok) setReports(res.reports as ReportRow[]);
-        else setAuthed(false);
+        if (res.ok) {
+          setReports((prev) => {
+            const next = res.reports as ReportRow[];
+            return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+          });
+        } else setAuthed(false);
+      } catch {
+        /* сеть недоступна — попробуем на следующем тике */
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     },
     [],
@@ -133,6 +139,45 @@ function AdminPage() {
       setBusy(false);
     }
   };
+
+  // живое обновление списка жалоб
+  useEffect(() => {
+    if (!authed || !code) return;
+    const tick = () => {
+      if (document.visibilityState === "visible") void load(code, status, true);
+    };
+    const id = window.setInterval(tick, 4000);
+    window.addEventListener("focus", tick);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", tick);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [authed, code, status, load]);
+
+  // живое обновление открытой переписки
+  useEffect(() => {
+    if (!authed || !code || !openId) return;
+    const id = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
+      void (async () => {
+        try {
+          const res = await adminGetTranscript({ data: { code, reportId: openId } });
+          if (res.ok) {
+            setMessages((prev) => {
+              const next = res.messages as Msg[];
+              return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+            });
+          }
+        } catch {
+          /* игнорируем разовые сбои сети */
+        }
+      })();
+    }, 3000);
+    return () => window.clearInterval(id);
+  }, [authed, code, openId]);
+
 
   if (!authed) {
     return (
@@ -233,7 +278,9 @@ function AdminPage() {
                 {new Date(r.created_at).toLocaleString()}
               </span>
             </div>
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.reason}</p>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+              {!r.reason || r.reason === "user_report" ? "Без комментария" : r.reason}
+            </p>
             <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
               {r.ai_violation && (
                 <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-destructive">
