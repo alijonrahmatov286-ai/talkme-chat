@@ -65,14 +65,20 @@ function AdminPage() {
   const [msgLoading, setMsgLoading] = useState(false);
 
   const load = useCallback(
-    async (c: string, s: Status) => {
-      setLoading(true);
+    async (c: string, s: Status, silent = false) => {
+      if (!silent) setLoading(true);
       try {
         const res = await adminListReports({ data: { code: c, status: s } });
-        if (res.ok) setReports(res.reports as ReportRow[]);
-        else setAuthed(false);
+        if (res.ok) {
+          setReports((prev) => {
+            const next = res.reports as ReportRow[];
+            return JSON.stringify(prev) === JSON.stringify(next) ? prev : next;
+          });
+        } else setAuthed(false);
+      } catch {
+        /* сеть недоступна — попробуем на следующем тике */
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     },
     [],
