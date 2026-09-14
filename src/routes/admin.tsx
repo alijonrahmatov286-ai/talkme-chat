@@ -278,7 +278,9 @@ function AdminPage() {
                 {new Date(r.created_at).toLocaleString()}
               </span>
             </div>
-            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{r.reason}</p>
+            <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+              {!r.reason || r.reason === "user_report" ? "Без комментария" : r.reason}
+            </p>
             <div className="mt-2 flex flex-wrap gap-1.5 text-[11px]">
               {r.ai_violation && (
                 <span className="rounded-full bg-destructive/15 px-2 py-0.5 text-destructive">
